@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reisbeheer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha557uWIX+LLMD/CDQ65zRz9VffmS8g1n4T3PABX8cT6L55U6U9Rz3U8zYF6iP0Jz8lF5I0oI5Q===" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="icon" type="image/png" href="logo.png"> 
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/5.0.2/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        /* ======================================================= */
+        /* BASIS CONFIGURATIE (STANDAARD: NACHTMODUS) - OVERGENOMEN VAN WATERSTANDEN.HTML */
+        /* ======================================================= */
+        :root {
+            --bg-dark: #0a111f; /* Zeer diep donkerblauw */
+            --card-base: #1c2638; /* Diepblauw-grijs metaal (voor lijstitems) */
+            --accent-blue: #3b82f6; /* New Mexico Blauw (Primair) */
+            --accent-teal: #14b8a6; /* New Mexico Turquoise (Secundair/OK status) */
+            --panel-bg: #151f30; /* Iets lichtere achtergrond voor panelen */
+            --text-color-primary: #e2e8f0;
+            --text-color-secondary: #a0aec0;
+            --border-color-dark: #374151;
+            --shadow-color-dark: rgba(0, 0, 0, 0.4);
+            --input-bg: #e2e8f0; /* Lichte achtergrond voor input */
+            --input-text: #111827; /* Donkere tekst in input */
+            
+            --text-on-accent: #111827; 
+            --text-on-accent-light: #ffffff; 
+            --border-color-light: #e5e7eb; /* Light mode border */
+            --shadow-color-light: rgba(0, 0, 0, 0.1); /* Light mode shadow */
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark); 
+            padding-top: 80px; 
+            color: var(--text-color-primary); 
+            transition: background-color 0.3s, color 0.3s; 
+        }
+
+        /* Navigatiebalk */
+        .navbar {
+            height: 80px; 
+            box-shadow: 0 4px 15px -5px var(--shadow-color-dark);
+            z-index: 1000;
+            background-color: #111827; 
+            border-bottom: 3px solid var(--accent-blue);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .navbar-title-ship {
+            font-weight: 800;
+            color: var(--accent-teal); /* Gebruik Turquoise voor de scheepsnaam */
+            text-shadow: 0 0 5px rgba(20, 184, 166, 0.5); 
+            transition: color 0.3s, text-shadow 0.3s;
+            letter-spacing: 0.1em;
+        }
+        
+        /* PANEEL STYLING (Tool-Panel) */
+        .tool-panel {
+            background-color: var(--panel-bg);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 5px 25px rgba(59, 130, 246, 0.25); /* Sterkere gloed */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color-dark); 
+            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        /* VERTICALE ACCENT LIJN VOOR PANELEN */
+        .tool-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px; 
+            height: 100%;
+            background-color: var(--accent-blue);
+            box-shadow: 1px 0 10px rgba(59, 130, 246, 0.6);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .panel-title {
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em; 
+            color: var(--accent-blue);
+            border-bottom: 2px solid var(--accent-blue);
+            padding-bottom: 0.5rem;
+            display: block;
+            transition: color 0.3s, border-color 0.3s;
+        }
+        
+        /* Custom styles for input fields (aangepast voor dual-mode) */
+        .custom-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color-dark); 
+            border-radius: 0.375rem;
+            background-color: var(--card-base); /* Donkerder dan panel */
+            color: var(--text-color-primary);
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        /* Light Mode Override for Input */
+        body.light-mode .custom-input {
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            border: 1px solid var(--border-color-light); 
+        }
+
+        textarea {
+            resize: vertical;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        /* Statistieken Paneel Stijl (Aangepast) */
+        .stats-panel {
+            background-color: var(--panel-bg); 
+            border: 1px solid var(--accent-blue);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+        /* Light Mode Override for Stats Panel */
+        body.light-mode .stats-panel {
+            background-color: var(--card-base);
+            border: 1px solid var(--accent-blue);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2.25rem; /* text-4xl */
+            font-weight: 900; /* font-extrabold */
+            color: var(--accent-teal); /* Gebruik Turquoise voor de waarde */
+            display: block;
+        }
+        .stat-label {
+            font-size: 1rem; 
+            font-weight: 600;
+            color: var(--text-color-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        body.light-mode .stat-label {
+            color: var(--text-color-primary);
+        }
+
+
+        /* Lijst Styling (Aangepast) */
+        #geanalyseerde-reizen { list-style: none; padding: 0; }
+        #geanalyseerde-reizen li {
+            background: var(--card-base); 
+            margin-bottom: 15px; padding: 20px; border-radius: 8px;
+            border-left: 8px solid var(--accent-teal); /* Turquoise balk */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: flex; justify-content: space-between; align-items: center;
+            transition: all 0.3s;
+        }
+        body.light-mode #geanalyseerde-reizen li {
+            background: #ffffff; 
+            border-left-color: var(--accent-teal);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .reis-detail { flex-grow: 1; padding-right: 20px; min-width: 250px; }
+        .reis-detail strong { display: block; font-size: 1.5em; font-weight: 800; color: var(--accent-blue); margin-bottom: 3px; }
+        .data-segment { text-align: right; min-width: 140px; padding-left: 20px; font-weight: 600; }
+        .data-segment strong { display: block; font-size: 0.9em; color: var(--text-color-secondary); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .data-value { font-size: 1.2em; color: var(--text-color-primary); }
+
+
+        /* Knoppen (Aangepast) */
+        /* Primaire knop: Accent Blauw */
+        .primary-button { 
+            background-color: var(--accent-blue); 
+            color: var(--text-on-accent-light); 
+            padding: 12px 24px; font-size: 18px; font-weight: 700; border-radius: 6px; 
+            cursor: pointer; transition: background-color 0.3s, transform 0.1s; border: none; 
+        }
+        .primary-button:hover { background-color: #2563eb; transform: translateY(-1px); } 
+        
+        /* Wis Knop: Rood */
+        .delete-button { 
+            background-color: #dc2626; /* Red-600 */
+            color: var(--text-on-accent-light); 
+            padding: 12px 24px; font-size: 18px; font-weight: 700; border-radius: 6px; 
+            cursor: pointer; transition: background-color 0.3s, transform 0.1s; border: none; 
+        }
+        .delete-button:hover { background-color: #b91c1c; transform: translateY(-1px); } /* red-700 */
+
+        /* Meldingen */
+        .melding { padding: 12px; margin-top: 15px; border-radius: 0.375rem; font-weight: 600; transition: all 0.3s; }
+        /* Fout: Gebruik rode tinten */
+        .melding.fout { background-color: #451a03; color: #fca5a5; border: 1px solid #ef4444; } 
+        body.light-mode .melding.fout { background-color: #fee2e2; color: #dc2626; border: 1px solid #f87171; } 
+
+        /* Succes: Gebruik groene/teal tinten */
+        .melding.succes { background-color: #0d3731; color: #5eead4; border: 1px solid #14b8a6; } 
+        body.light-mode .melding.succes { background-color: #d1fae5; color: #065f46; border: 1px solid #34d399; } 
+
+        /* ======================================================= */
+        /* MENU KNOP & PANEEL STYLING (overgenomen van waterstanden.html) */
+        /* ======================================================= */
+        .menu-grid-button {
+            display: grid;
+            grid-template-columns: repeat(2, 10px);
+            grid-template-rows: repeat(2, 10px);
+            gap: 4px;
+            padding: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative; 
+            z-index: 1010; 
+        }
+        .menu-grid-button:hover {
+            transform: scale(1.05);
+        }
+        .menu-grid-dot {
+            background-color: var(--accent-blue);
+            border-radius: 2px;
+            box-shadow: 0 0 3px rgba(59, 130, 246, 0.5);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        
+        #menu-panel {
+            position: fixed;
+            top: 83px; 
+            right: 20px; 
+            background-color: var(--panel-bg);
+            border: 1px solid var(--accent-blue);
+            border-radius: 0.5rem;
+            box-shadow: 0 5px 15px var(--shadow-color-dark);
+            width: 280px; 
+            z-index: 1000;
+            padding: 10px; 
+            
+            opacity: 0;
+            transform: translateX(20px);
+            visibility: hidden;
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out, visibility 0.3s, background-color 0.3s;
+        }
+
+        #menu-panel.active {
+            opacity: 1;
+            transform: translateX(0);
+            visibility: visible;
+        }
+
+        #menu-links-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 10px; 
+        }
+
+        .menu-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100px; 
+            text-align: center;
+            border-radius: 0.5rem; 
+            
+            background-color: var(--border-color-dark); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-color-primary);
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s, background-color 0.3s, color 0.3s;
+            line-height: 1.2;
+        }
+
+        .menu-link:hover {
+            background-color: var(--accent-blue);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 5px rgba(59, 130, 246, 0.3);
+        }
+        .menu-icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        /* Modus Schakelen knop breed maken (2 kolommen) */
+        #mode-toggle-link {
+             grid-column: span 2; 
+             background-color: #374151; 
+        }
+        
+        /* Instellingen (weer smal maken) */
+        #settings-link {
+            background-color: #4b5563; 
+            border: 1px solid var(--accent-teal);
+        }
+
+
+        /* ======================================================= */
+        /* DAGMODUS OVERRIDES (LIGHT MODE) */
+        /* ======================================================= */
+        body.light-mode {
+            --bg-dark: #f3f4f6; 
+            --card-base: #ffffff; 
+            --accent-blue: #1e3a8a; 
+            --accent-teal: #047857; 
+            --panel-bg: #ffffff;
+            --text-color-primary: #1f2937;
+            --text-color-secondary: #4b5563;
+            --input-bg: #f9fafb;
+            --input-text: #1f2937;
+            --shadow-color-dark: rgba(0, 0, 0, 0.1);
+            
+            background-color: var(--bg-dark);
+            color: var(--text-color-primary);
+        }
+
+        body.light-mode .navbar {
+            background-color: var(--panel-bg);
+            box-shadow: 0 4px 15px -5px var(--shadow-color-light);
+            border-bottom-color: var(--accent-blue);
+        }
+        body.light-mode .navbar-title-ship {
+            text-shadow: none;
+            color: var(--accent-teal);
+        }
+
+        /* Menu */
+        body.light-mode #menu-panel { box-shadow: 0 5px 15px var(--shadow-color-light); }
+        body.light-mode .menu-link { background-color: #e5e7eb; color: var(--text-color-primary); }
+        body.light-mode .menu-link:hover { background-color: var(--accent-blue); color: white; }
+        body.light-mode #mode-toggle-link { 
+            background-color: #d1d5db; 
+            color: var(--text-color-primary);
+        }
+        body.light-mode #settings-link { background-color: #d1d5db; }
+
+        /* Panelen */
+        body.light-mode .tool-panel { 
+            background-color: var(--panel-bg); 
+            border: 1px solid var(--border-color-light); 
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+        }
+        body.light-mode .tool-panel::before {
+            background-color: var(--accent-blue);
+            box-shadow: none;
+        }
+
+        body.light-mode .panel-title {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+        
+        body.light-mode .stat-value {
+             color: var(--accent-teal);
+        }
+        
+        body.light-mode .data-table tr:nth-child(even) {
+            background-color: #f7f7f7;
+        }
+        .navbar-title {
+            font-weight: 800;
+            color: var(--accent-blue);
+            text-shadow: 0 0 5px rgba(59, 130, 246, 0.5); 
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+
+    </style>
+</head>
+<body class="flex flex-col items-center min-h-screen relative">
+    
+    <header class="navbar fixed top-0 left-0 w-full flex items-center justify-between px-8">
+        <div class="text-2xl navbar-title tracking-widest">
+           reizen
+        </div>
+            <button id="menu-toggle" class="menu-grid-button" aria-label="Open Hoofdmenu" aria-controls="menu-panel">
+                <div class="menu-grid-dot"></div>
+                <div class="menu-grid-dot"></div>
+                <div class="menu-grid-dot"></div>
+                <div class="menu-grid-dot"></div>
+            </button>
+        </div>
+    </header>
+
+    <nav id="menu-panel" role="navigation" aria-label="Hoofdnavigatie">
+        <div id="menu-links-grid">
+            <a href="index.html" class="menu-link">
+                <span class="menu-icon" role="img" aria-label="Home">🏠</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="waterstanden.html" class="menu-link">
+                <span class="menu-icon" role="img" aria-label="Brug">🌉</span>
+                <span>Brughoogte</span>
+            </a>
+            <a href="reizen.html" class="menu-link" style="background-color: var(--accent-blue); color: var(--text-on-accent-light);">
+                <span class="menu-icon" role="img" aria-label="Kompas">🧭</span>
+                <span>Reizen</span>
+            </a>
+            <a href="adn.html" class="menu-link">
+                <span class="menu-icon" role="img" aria-label="Vlam">🔥</span>
+                <span>ADN Document</span>
+            </a>
+            <a href="#" id="mode-toggle-link" class="menu-link" role="button">
+                <span class="menu-icon" role="img" aria-label="Modus schakelen">🌓</span>
+                <span>Modus Schakelen</span>
+            </a>
+
+        </div>
+    </nav>
+
+    <div id="main-content" class="flex flex-col w-full max-w-6xl p-8 pt-24">
+        
+        <div class="stats-panel grid grid-cols-3 gap-6">
+            <div class="stat-item">
+                <span id="totaal-reizen" class="stat-value">0</span>
+                <span class="stat-label"><i class="fas fa-route mr-1"></i> Aantal Reizen</span>
+            </div>
+            <div class="stat-item">
+                <span id="totaal-containers" class="stat-value">0</span>
+                <span class="stat-label"><i class="fas fa-boxes mr-1"></i> Totaal Containers</span>
+            </div>
+            <div class="stat-item">
+                <span id="totaal-tonnage" class="stat-value">0</span>
+                <span class="stat-label"><i class="fas fa-weight-hanging mr-1"></i> Totaal Tonnage (T)</span>
+            </div>
+        </div>
+
+        <div id="invoer-panelen" class="grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
+            
+            <div class="tool-panel">
+                <span class="panel-title text-2xl"><i class="fas fa-keyboard mr-2"></i> HANDMATIGE INVOER</span>
+                
+                <form id="handmatige-invoer-form" onsubmit="voegReisHandmatigToe(event)">
+                    <div class="grid grid-cols-1 gap-4">
+                        
+                        <div>
+                            <label for="reis-nr" class="block mb-2 text-gray-300 font-medium"><i class="fas fa-ship mr-1"></i> Reisnummer:</label>
+                            <input type="text" id="reis-nr" class="custom-input" placeholder="Bijv. 396295" required>
+                        </div>
+
+                        <div>
+                            <label for="container-aantal" class="block mb-2 text-gray-300 font-medium"><i class="fas fa-boxes mr-1"></i> Container Aantal:</label>
+                            <input type="number" id="container-aantal" class="custom-input" placeholder="Bijv. 150" required min="0">
+                        </div>
+
+                        <div>
+                            <label for="tonnage" class="block mb-2 text-gray-300 font-medium"><i class="fas fa-weight-hanging mr-1"></i> Tonnage (Ton):</label>
+                            <input type="number" step="0.01" id="tonnage" class="custom-input" placeholder="Bijv. 834.38" required min="0">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="primary-button w-full mt-4">
+                        <i class="fas fa-plus-circle mr-2"></i> Toevoegen aan Reislijst
+                    </button>
+                </form>
+            </div>
+
+            <div class="tool-panel">
+                <span class="panel-title text-2xl"><i class="fas fa-file-code mr-2"></i> BAPLIE ANALYSE</span>
+                
+                <label for="baplie-bestand" class="block mb-2 text-gray-300 font-medium mt-4">Upload BAPLIE Bestand (.edi of .txt):</label>
+                <input type="file" id="baplie-bestand" accept=".edi, .txt" class="mb-4 text-sm">
+                
+                <button onclick="analyseerBaplie()" class="primary-button w-full">
+                    <i class="fas fa-code-branch mr-2"></i> Analyseer en Voeg Toe
+                </button>
+            </div>
+        </div>
+
+        <div id="status-melding" class="melding" style="display:none;"></div>
+        
+        <button onclick="toggleInvoerPanelen()" id="nieuwe-reis-knop" class="primary-button w-full mt-6 mb-8 text-center">
+            <i class="fas fa-pencil-alt mr-2"></i> Voer Nieuwe Reis In
+        </button>
+
+        <div class="tool-panel mt-8">
+            <span class="panel-title text-2xl">OPGESLAGEN REIZEN LIJST</span>
+            <ul id="geanalyseerde-reizen" class="mt-4">
+            </ul>
+            <button onclick="wisAlleReizen()" class="delete-button w-full mt-6">
+                <i class="fas fa-file-pdf mr-2"></i> Genereer PDF & Wis Alle Reizen
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        const REIZEN_KEY = 'opgeslagenReizen_NewMexico';
+        const DARK_MODE_KEY = 'darkModeEnabled';
+        const invoerPanelen = document.getElementById('invoer-panelen');
+        const nieuweReisKnop = document.getElementById('nieuwe-reis-knop');
+        const modeToggleLink = document.getElementById('mode-toggle-link');
+        const menuPanel = document.getElementById('menu-panel');
+        const menuToggle = document.getElementById('menu-toggle');
+        const body = document.body;
+
+        // ====================================================================
+        // DARK MODE EN MENU LOGICA (Overgenomen van waterstanden.html)
+        // ====================================================================
+
+        function savePreferredMode(isEnabled) {
+            localStorage.setItem(DARK_MODE_KEY, isEnabled ? 'true' : 'false');
+        }
+
+        function loadPreferredMode() {
+            const isEnabled = localStorage.getItem(DARK_MODE_KEY) !== 'false';
+            if (isEnabled) {
+                body.classList.remove('light-mode');
+            } else {
+                body.classList.add('light-mode');
+            }
+            updateModeToggleText(isEnabled);
+        }
+
+        function updateModeToggleText(isDarkMode) {
+            const icon = isDarkMode ? '☀️' : '🌙';
+            const text = isDarkMode ? 'Dagmodus' : 'Nachtmodus';
+            modeToggleLink.innerHTML = `<span class="menu-icon" role="img" aria-label="Modus schakelen">${icon}</span> <span>${text}</span>`;
+            
+            // Pas de achtergrondkleur van de knop aan op basis van de modus
+            if (isDarkMode) {
+                modeToggleLink.style.backgroundColor = '#374151'; 
+            } else {
+                modeToggleLink.style.backgroundColor = '#d1d5db'; 
+            }
+        }
+
+        function toggleDarkMode() {
+            const isDarkMode = !body.classList.contains('light-mode');
+            if (isDarkMode) {
+                body.classList.add('light-mode');
+                savePreferredMode(false);
+            } else {
+                body.classList.remove('light-mode');
+                savePreferredMode(true);
+            }
+            updateModeToggleText(!isDarkMode);
+        }
+
+        // Event listeners voor menu en dark mode
+        menuToggle.addEventListener('click', function(event) {
+            event.stopPropagation();
+            menuPanel.classList.toggle('active');
+        });
+
+        document.addEventListener('click', function(event) {
+            if (menuPanel.classList.contains('active') && !menuPanel.contains(event.target) && !menuToggle.contains(event.target)) {
+                menuPanel.classList.remove('active');
+            }
+        });
+        
+        modeToggleLink.addEventListener('click', function(event) {
+            event.preventDefault();
+            toggleDarkMode();
+        });
+
+
+        // --- FUNCTIES VOOR UI BEHEER (Reizen specifieke logica) --- 
+        function toggleInvoerPanelen() {
+            invoerPanelen.classList.toggle('hidden');
+            if (invoerPanelen.classList.contains('hidden')) {
+                nieuweReisKnop.innerHTML = '<i class="fas fa-pencil-alt mr-2"></i> Voer Nieuwe Reis In';
+            } else {
+                nieuweReisKnop.innerHTML = '<i class="fas fa-times-circle mr-2"></i> Sluit Invoer'; 
+                invoerPanelen.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } 
+
+        function berekenEnToonTotalen(reizen) {
+            const totaalReizen = reizen.length;
+            const totaalContainers = reizen.reduce((sum, reis) => sum + reis.containers, 0); 
+            const totaalTonnage = reizen.reduce((sum, reis) => sum + reis.tonnage, 0).toFixed(2);
+            document.getElementById('totaal-reizen').textContent = totaalReizen;
+            document.getElementById('totaal-containers').textContent = totaalContainers.toLocaleString('nl-NL');
+            document.getElementById('totaal-tonnage').textContent = parseFloat(totaalTonnage).toLocaleString('nl-NL');
+        }
+
+        // --- FUNCTIES VOOR DATA BEHEER --- 
+        function haalOpgeslagenReizenOp() {
+            const json = localStorage.getItem(REIZEN_KEY);
+            try { 
+                return json ? JSON.parse(json) : []; 
+            } catch (e) { 
+                console.error("Fout bij het parsen van opgeslagen reizen:", e); 
+                return []; 
+            }
+        } 
+
+        function slaReizenOp(reizen) {
+            localStorage.setItem(REIZEN_KEY, JSON.stringify(reizen));
+        }
+
+        function updateReizenLijst(reizen) {
+            const lijst = document.getElementById('geanalyseerde-reizen');
+            lijst.innerHTML = ''; 
+
+            if (reizen.length === 0) {
+                lijst.innerHTML = '<li class="text-center py-4 text-gray-400 border-none shadow-none" style="background: none;">Nog geen reizen opgeslagen.</li>';
+            }
+
+            reizen.forEach((reis, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div class="reis-detail">
+                        <strong class="text-xl">REISNR: ${reis.reisnummer}</strong>
+                        <span class="text-sm text-gray-400">Toegevoegd: ${reis.datum}</span>
+                    </div>
+                    <div class="data-segment">
+                        <strong>Containers</strong>
+                        <span class="data-value">${reis.containers.toLocaleString('nl-NL')}</span>
+                    </div>
+                    <div class="data-segment">
+                        <strong>Tonnage (T)</strong>
+                        <span class="data-value">${reis.tonnage.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div>
+                        <button onclick="verwijderReis(${index})" class="delete-button p-2 text-sm ml-4" style="padding: 0.5rem 1rem;">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `;
+                lijst.appendChild(li);
+            });
+
+            berekenEnToonTotalen(reizen);
+        }
+
+        function voegReisToe(reis) {
+            const reizen = haalOpgeslagenReizenOp();
+            // Controleer op dubbele reisnummers
+            if (reizen.some(r => r.reisnummer === reis.reisnummer)) {
+                toonMelding('fout', `❌ Reisnummer ${reis.reisnummer} is al opgeslagen.`);
+                return false;
+            }
+            reizen.push(reis);
+            slaReizenOp(reizen);
+            updateReizenLijst(reizen);
+            toonMelding('succes', `✅ Reis ${reis.reisnummer} succesvol toegevoegd.`);
+            return true;
+        }
+
+        function voegReisHandmatigToe(event) {
+            event.preventDefault();
+            const reisNr = document.getElementById('reis-nr').value.trim();
+            const containerAantal = parseInt(document.getElementById('container-aantal').value);
+            const tonnage = parseFloat(document.getElementById('tonnage').value);
+
+            if (!reisNr || isNaN(containerAantal) || isNaN(tonnage)) {
+                toonMelding('fout', '❌ Vul alle velden correct in.');
+                return;
+            }
+
+            const nieuweReis = {
+                reisnummer: reisNr,
+                containers: containerAantal,
+                tonnage: tonnage,
+                datum: new Date().toLocaleDateString('nl-NL')
+            };
+
+            if (voegReisToe(nieuweReis)) {
+                document.getElementById('handmatige-invoer-form').reset();
+            }
+        }
+        
+        function toonMelding(type, bericht) {
+            const melding = document.getElementById('status-melding');
+            melding.className = `melding ${type}`;
+            melding.textContent = bericht;
+            melding.style.display = 'block';
+            setTimeout(() => {
+                melding.style.display = 'none';
+            }, 5000);
+        }
+
+        function verwijderReis(index) {
+            if (!confirm('Weet u zeker dat u deze reis wilt verwijderen?')) return;
+
+            let reizen = haalOpgeslagenReizenOp();
+            const reisNr = reizen[index].reisnummer;
+            reizen.splice(index, 1);
+            slaReizenOp(reizen);
+            updateReizenLijst(reizen);
+            toonMelding('succes', `✅ Reis ${reisNr} succesvol verwijderd.`);
+        }
+
+        // --- BAPLIE LOGICA ---
+        function analyseerBaplie() {
+            const bestandsInvoer = document.getElementById('baplie-bestand').files;
+            if (bestandsInvoer.length === 0) {
+                toonMelding('fout', '❌ Selecteer een BAPLIE-bestand.');
+                return;
+            }
+
+            const lezer = new FileReader();
+            lezer.onload = function(e) {
+                verwerkDataEnSlaOp(e.target.result);
+            };
+            lezer.readAsText(bestandsInvoer[0]);
+        }
+        
+        function verwerkDataEnSlaOp(baplieInhoud) {
+            try {
+                // 1. EXTRAHEER REISNUMMER (VOLGENS GEBRUIKER: TDT+20+ segment)
+                // Zoek naar TDT+20+ gevolgd door een nummer
+                const voyageMatch = baplieInhoud.match(/TDT\+20\+(\d+)/); 
+                const reisNr = voyageMatch ? voyageMatch[1] : `AUTO-${new Date().getTime() % 10000}`;
+
+                // 2. EXTRAHEER AANTAL CONTAINERS (TEL EQD+CN+ SEGMENTEN)
+                const containerMatches = (baplieInhoud.match(/EQD\+CN\+/g) || []).length;
+                let tonnageTotalKGM = 0;
+
+                // 3. EXTRAHEER GEWICHT (MEA+WT++KGM:)
+                // Regex om de KGM-waarde te vangen. BAPLIE bestanden gebruiken MEA+WT++KGM:
+                const weightMatches = baplieInhoud.match(/MEA\+WT\+\+KGM:(\d+)/g); 
+                
+                if (weightMatches && weightMatches.length > 0) {
+                    weightMatches.forEach(match => {
+                        // De match is bijvoorbeeld "MEA+WT++KGM:26620"
+                        const parts = match.split(':');
+                        // De laatste part is het gewicht (KGM)
+                        tonnageTotalKGM += parseInt(parts[parts.length - 1]);
+                    });
+                }
+                
+                // Als het bestand geen geldige data bevat
+                if (containerMatches === 0 && tonnageTotalKGM === 0) {
+                    toonMelding('fout', '❌ Bestand is leeg of geen containerinformatie/gewicht gevonden.');
+                    return;
+                }
+
+                // Converteer KGM naar Ton
+                let tonnage = tonnageTotalKGM / 1000;
+                
+                // Als er wel containers zijn, maar geen gewicht gevonden
+                if (containerMatches > 0 && tonnageTotalKGM === 0) {
+                    // Fallback: 15 ton per container schatting
+                    tonnage = containerMatches * 15;
+                    console.warn("Kon geen MEA+WT++KGM gewichten vinden in BAPLIE. Tonnage is geschat op 15T per container.");
+                    toonMelding('fout', '⚠️ Geen gewicht gevonden. Tonnage geschat op 15T per container.');
+                }
+                
+                const nieuweReis = {
+                    reisnummer: reisNr,
+                    containers: containerMatches,
+                    tonnage: parseFloat(tonnage.toFixed(2)),
+                    datum: new Date().toLocaleDateString('nl-NL')
+                };
+
+                if (voegReisToe(nieuweReis)) {
+                     // Wis de bestandsinvoer na succes
+                    document.getElementById('baplie-bestand').value = '';
+                }
+
+            } catch (e) {
+                console.error("BAPLIE Analyse Fout:", e);
+                toonMelding('fout', '❌ Fout tijdens analyse van het BAPLIE-bestand.');
+            }
+        }
+
+        // --- WIS ALLES EN PDF ---
+        function genereerReizenRapport(reizen) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4'); // Gebruik mm voor makkelijker positioneren
+            
+            // Kleur definities (op basis van uw CSS-thema)
+            const ACCENT_BLUE = [59, 130, 246]; // Tailwind blue-500
+            const ACCENT_TEAL = [20, 184, 166]; // Tailwind teal-500
+            const DARK_BLUE = [30, 41, 59]; // Donkere tekst/elementen
+            const HEADER_TEXT_COLOR = 255; // Wit
+
+            if (typeof doc.autoTable !== 'function') {
+                alert("Fout: De jspdf-autotable plugin is niet geladen. PDF generatie werkt niet. Download het rapport handmatig.");
+                return;
+            }
+
+            const margin = 15;
+            const pageWidth = doc.internal.pageSize.getWidth();
+
+            // Functie om de kop- en voettekst op elke pagina toe te voegen
+            const addHeaderFooter = function(data) {
+                // --- HEADER (Balk) ---
+                doc.setFillColor(...DARK_BLUE);
+                doc.rect(0, 0, pageWidth, 15, 'F'); // Donkere balk bovenaan
+                
+                doc.setFontSize(16);
+                doc.setTextColor(HEADER_TEXT_COLOR);
+                doc.setFont('helvetica', 'bold');
+                doc.text("REIZEN RAPPORT | MS NEW MEXICO", margin, 10);
+                
+                // --- FOOTER (Paginanummering) ---
+                const pageNumber = data.pageNumber;
+                // Workaround om totaal aantal pagina's te krijgen (doc.internal.pages.length - 1)
+                const totalPages = doc.internal.pages.length - 1 || 1; 
+                
+                doc.setFontSize(8);
+                doc.setTextColor(150); // Grijs
+                doc.setFont('helvetica', 'normal');
+                const footerText = `Pagina ${pageNumber} van ${totalPages} | Rapportage datum: ${new Date().toLocaleDateString('nl-NL')}`;
+                doc.text(footerText, pageWidth - margin, doc.internal.pageSize.getHeight() - 5, { align: 'right' });
+            };
+
+            let y = 25; // Startpositie voor content
+
+            // --- TOTALEN SECTIE (Boven de tabel in een apart vak) ---
+            const totaalContainers = reizen.reduce((sum, r) => sum + r.containers, 0); 
+            const totaalTonnage = reizen.reduce((sum, r) => sum + r.tonnage, 0);
+
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...ACCENT_BLUE);
+            doc.text("Overzicht Totalen", margin, y);
+            y += 3;
+            
+            // Teken een blauw vak rond de totalen
+            const boxX = margin;
+            const boxY = y;
+            const boxWidth = pageWidth - 2 * margin;
+            const boxHeight = 15;
+            doc.setDrawColor(...ACCENT_BLUE); 
+            doc.setLineWidth(0.5);
+            doc.rect(boxX, boxY, boxWidth, boxHeight, 'S');
+            
+            // Tekst in het vak
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(DARK_BLUE[0]); // Donkere tekst kleur
+            
+            // Reizen
+            doc.text(`Totaal Reizen: `, boxX + 5, boxY + 5, { baseline: 'top' });
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...ACCENT_TEAL);
+            doc.text(`${reizen.length}`, boxX + 35, boxY + 5, { baseline: 'top' });
+            
+            // Containers
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(DARK_BLUE[0]);
+            doc.text(`Totaal Containers: `, boxX + 60, boxY + 5, { baseline: 'top' });
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...ACCENT_TEAL);
+            doc.text(`${totaalContainers.toLocaleString('nl-NL')}`, boxX + 95, boxY + 5, { baseline: 'top' });
+            
+            // Tonnage
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(DARK_BLUE[0]);
+            doc.text(`Totaal Tonnage: `, boxX + 130, boxY + 5, { baseline: 'top' });
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...ACCENT_TEAL);
+            doc.text(`${totaalTonnage.toLocaleString('nl-NL', { minimumFractionDigits: 2 })} T`, boxX + 165, boxY + 5, { baseline: 'top' });
+            
+            y += boxHeight + 8;
+            
+            // --- TABEL (Gedetailleerde lijst) ---
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...ACCENT_BLUE);
+            doc.text("Gedetailleerde Reislijst", margin, y);
+            y += 2;
+
+            const headers = ["Reisnummer", "Containers", "Tonnage (T)", "Datum"];
+            const rows = reizen.map(reis => [
+                reis.reisnummer, 
+                reis.containers.toLocaleString('nl-NL'), 
+                reis.tonnage.toLocaleString('nl-NL', { minimumFractionDigits: 2 }),
+                reis.datum
+            ]);
+
+            doc.autoTable({
+                startY: y,
+                head: [headers],
+                body: rows,
+                margin: { top: 15, right: margin, bottom: 15, left: margin },
+                theme: 'grid', // Gebruik 'grid' voor een strakke look
+                styles: {
+                    fontSize: 10,
+                    cellPadding: 3,
+                    lineColor: 200, // Lichte grijze lijnen
+                    lineWidth: 0.1,
+                    textColor: DARK_BLUE[0], // Donkere tekst in de tabel
+                },
+                headStyles: { 
+                    fillColor: ACCENT_BLUE, 
+                    textColor: HEADER_TEXT_COLOR, 
+                    fontStyle: 'bold',
+                    halign: 'center' 
+                }, 
+                alternateRowStyles: {
+                    fillColor: [240, 248, 255] // Zeer lichtblauw voor afwisselende rijen
+                },
+                columnStyles: {
+                    0: { cellWidth: 45, halign: 'left' }, // Reisnummer links uitlijnen
+                    1: { cellWidth: 30, halign: 'right' }, // Containers rechts uitlijnen
+                    2: { cellWidth: 35, halign: 'right' }, // Tonnage rechts uitlijnen
+                    3: { cellWidth: 30, halign: 'center' }, // Datum centreren
+                },
+                didDrawPage: addHeaderFooter, // Zorg dat de header/footer op alle pagina's staat
+            });
+
+            doc.save("Reizen_Rapport_MS_New_Mexico.pdf");
+        }
+
+        function wisAlleReizen() {
+            const alleReizen = haalOpgeslagenReizenOp();
+            const statusMelding = document.getElementById('status-melding');
+            statusMelding.style.display = 'none';
+
+            if (alleReizen.length === 0) {
+                toonMelding('fout', '❌ Er zijn geen reizen opgeslagen om te wissen.');
+                return;
+            }
+
+            if (confirm('⚠️ WEET U HET ZEKER? Alle reizen worden gewist. Er wordt eerst een PDF-rapport gedownload.')) {
+                // 1. Genereer PDF (dit start een download in de browser)
+                genereerReizenRapport(alleReizen);
+
+                // 2. Wis de data
+                localStorage.removeItem(REIZEN_KEY);
+                updateReizenLijst([]);
+                
+                // 3. Toon succesmelding
+                toonMelding('succes', '✅ PDF-rapport gedownload. Alle opgeslagen reizen zijn gewist.');
+            }
+        }
+        
+        // ====================================================================
+        // START PROGRAMMA
+        // ====================================================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPreferredMode(); 
+            const opgeslagenReizen = haalOpgeslagenReizenOp();
+            updateReizenLijst(opgeslagenReizen);
+        });
+
+    </script>
+    
+    </body>
+</html>
