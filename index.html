@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MS New Mexico | Dashboard</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-blue: #1e40af;
+            --glow-blue: #3b82f6;
+            --dark-bg: #020617;
+            --glass: rgba(15, 23, 42, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Licentie Blokkade Scherm */
+        #license-blocker {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-bg);
+            color: white;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .bg-fixed {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('pic/Afbeelding van WhatsApp op 2025-11-06 om 12.27.07_d3198d5b.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+            filter: brightness(0.15) contrast(0.95) saturate(0.8);
+        }
+
+        .navbar {
+            height: 80px;
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar h1 {
+            font-weight: 900;
+            font-size: 1.6rem;
+            letter-spacing: 0.8em;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #fff, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .side-panel {
+            position: fixed;
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 2.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 0 40px rgba(0,0,0,0.6), inset 0 0 20px rgba(59, 130, 246, 0.05);
+            z-index: 500;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .left { top: 110px; left: 25px; width: 320px; }
+        .right { top: 110px; right: 25px; width: 420px; }
+        
+        .side-panel.right.hidden-panel {
+            transform: translateX(calc(100% + 50px));
+        }
+
+        .toggle-tab {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(30, 64, 175, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            width: 35px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1.5rem 0 0 1.5rem;
+            cursor: pointer;
+            z-index: 1001;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-tab:hover { background: var(--glow-blue); width: 45px; }
+        .toggle-tab svg { width: 24px; height: 24px; fill: white; transition: transform 0.5s ease; transform: rotate(0deg); }
+        .toggle-tab.closed svg { transform: rotate(180deg); }
+
+        .tab-container {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.05);
+            padding: 4px;
+            border-radius: 1rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            color: #94a3b8;
+        }
+
+        .tab-btn.active {
+            background: var(--primary-blue);
+            color: white;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .data-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 1.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            text-align: center;
+        }
+        
+        .panel-label { color: #94a3b8; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 2.5px; display: block; margin-bottom: 4px; }
+        .panel-val { color: #ffffff; font-weight: 800; font-size: 1.1rem; text-shadow: 0 0 10px rgba(59, 130, 246, 0.3); }
+        .val-large { font-size: 1.5rem; }
+
+        .refresh-circle {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.5rem;
+            width: 35px;
+            height: 35px;
+            background: rgba(59, 130, 246, 0.2);
+            border: 2px solid rgba(59, 130, 246, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .refresh-circle svg { width: 20px; height: 20px; fill: white; }
+
+        .refresh-circle.auto-active {
+            background: rgba(34, 197, 94, 0.6);
+            border-color: rgba(34, 197, 94, 0.9);
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.6);
+        }
+
+        .web-mask {
+            width: 100%;
+            height: 420px; 
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            background: #fff;
+            position: relative;
+        }
+
+        .web-mask iframe {
+            width: 120%; 
+            height: 900px;
+            position: absolute;
+            top: -220px; 
+            left: -12%; 
+            border: none;
+            transform: scale(1.0); 
+            transform-origin: top center;
+        }
+
+        .search-box { margin-top: 130px; margin-bottom: 3rem; width: 100%; max-width: 550px; }
+        .search-input { 
+            width: 100%; 
+            background: rgba(255, 255, 255, 0.95) !important; 
+            border-radius: 3rem !important; 
+            padding: 1.1rem; 
+            color: #020617; 
+            font-weight: 700; 
+            border: none; 
+            text-align: center; 
+        }
+
+        .btn-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 1.5rem; 
+            width: 100%; 
+            max-width: 800px; 
+            padding-bottom: 50px;
+        }
+
+        .card { 
+            height: 120px; 
+            background: linear-gradient(145deg, #1e3a8a 0%, #020617 100%); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 2rem; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            text-decoration: none; 
+            transition: 0.3s; 
+            padding: 15px; 
+        }
+
+        .card:hover { transform: translateY(-10px); border-color: var(--glow-blue); }
+        .card img { height: 50px; object-fit: contain; margin-bottom: 10px; }
+        .card span { color: rgba(255,255,255,0.9); font-weight: 700; font-size: 0.7rem; text-transform: uppercase; }
+
+        @media (max-width: 1650px) { 
+            .side-panel { position: relative; top: 0 !important; left: 0; right: 0; width: 100%; margin-bottom: 20px; display: block; transform: none !important; }
+            .toggle-tab { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="bg-fixed"></div>
+
+    <div id="side-toggle" class="toggle-tab" onclick="toggleRightPanel()" title="Toon/Verberg RWS">
+        <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+    </div>
+
+    <nav class="navbar">
+        <h1>MS NEW MEXICO</h1>
+        <div class="ml-auto text-right">
+            <div id="clock" class="text-2xl font-black text-white tracking-tighter leading-none">00:00:00</div>
+            <div id="date" class="text-[9px] text-blue-400 font-bold uppercase tracking-[3px] mt-1">Laden...</div>
+        </div>
+    </nav>
+
+    <aside class="side-panel left">
+        <h2 class="text-[0.9rem] font-black tracking-[4px] text-blue-400 uppercase mb-6 text-center border-b border-blue-900/30 pb-2">Scheepsgegevens</h2>
+        <div class="data-card border-blue-500/20">
+            <span class="panel-label">Naam</span>
+            <span class="panel-val val-large">NEW MEXICO</span>
+        </div>
+        <div class="data-card">
+            <span class="panel-label">ENI Nummer</span>
+            <span class="panel-val">02328697</span>
+        </div>
+        <div class="data-card">
+            <span class="panel-label">Afmetingen</span>
+            <span class="panel-val">135 x 14,2 x 3,61 m</span>
+        </div>
+        <div class="data-card">
+            <span class="panel-label">Tonnage</span>
+            <span class="panel-val">4800 T</span>
+        </div>
+        <div class="data-card">
+            <span class="panel-label">Capaciteit</span>
+            <span class="panel-val">421 TEU</span>
+        </div>
+    </aside>
+
+    <aside id="right-panel" class="side-panel right">
+        <h2 id="rws-title" class="text-[0.7rem] font-black tracking-[4px] text-blue-400 uppercase mb-4 text-center border-b border-blue-900/30 pb-2">Hoek van Holland Live</h2>
+        
+        <div class="tab-container">
+            <button class="tab-btn active" id="tab-hoek" onclick="switchRWS('hoek')">Hoek v. Holland</button>
+            <button class="tab-btn" id="tab-dord" onclick="switchRWS('dord')">Dordrecht</button>
+        </div>
+
+        <div id="refresh-btn" class="refresh-circle" title="Inhouden (1s): Auto-modus AAN/UIT | Klik: 1x Verversen">
+            <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        </div>
+        
+        <div class="web-mask">
+            <iframe id="rws-frame" src="https://waterinfo.rws.nl/publiek/waterhoogte/Hoek-van-Holland%28HOEK%29/details"></iframe>
+        </div>
+    </aside>
+
+    <main class="flex flex-col items-center w-full px-4">
+        <div class="search-box">
+            <form action="https://www.google.com/search" method="get" target="_blank">
+                <input type="text" name="q" placeholder="Zoekopdracht op Google..." class="search-input">
+            </form>
+        </div>
+
+        <div class="btn-grid">
+            <a href="waterstanden.html" target="_blank" class="card"><img src="pic/Schipzijhoogtesth2.png"><span>Brughoogte</span></a>
+            <a href="reizen.html" target="_blank" class="card"><span class="text-4xl mb-2">🗓️</span><span>Reizen</span></a>
+            <a href="https://nextlogic-planning.com/" target="_blank" class="card"><img src="pic/nextlogic_logo.png"><span>Nextlogic</span></a>
+            <a href="adn.html" target="_blank" class="card"><img src="pic/adn.png"><span>ADN</span></a>
+            <a href="https://cwl.modality.nl/barge-app/login" target="_blank" class="card"><img src="pic/cwl_modality_logo.png"><span>Contargo</span></a>
+            <a href="https://scheepsuitrusting.nl/mijn-account" target="_blank" class="card"><img src="pic/Heijmen_logo.png"><span>Heijmen</span></a>
+            <a href="https://waterinfo.rws.nl/publiek/waterhoogte" target="_blank" class="card"><img src="pic/rws_logo.png"><span>RWS</span></a>
+            <a href="https://www.elwis.de/DE/dynamisch/Wasserstaende/Pegelliste:area:RHEINGEBIET" target="_blank" class="card"><img src="pic/elwis_logo.png"><span>Elwis</span></a>
+            <a href="https://fleet.tresco.eu/map" target="_blank" class="card"><img src="pic/tresco.png"><span>Wijgaart</span></a>
+            <a href="http://192.168.8.1/" target="_blank" class="card"><span class="text-4xl mb-2">📶</span><span>Router</span></a>
+            <a href="Hafenmeester duisburg.html" target="_blank"  class="card"><img src="pic/Duisburg.png"><span>Duisburg</span></a>
+            <a href="https://vaarweginformatie.nl/frp/main/#/nts/map?limitationGroup=BLOCKED" target="_blank" class="card"><img src="pic/stremming.png"><span>Stremmings</span></a>
+        </div>
+    </main>
+
+    <script>
+        function toggleRightPanel() {
+            const panel = document.getElementById('right-panel');
+            const toggle = document.getElementById('side-toggle');
+            panel.classList.toggle('hidden-panel');
+            toggle.classList.toggle('closed');
+        }
+
+        function switchRWS(station) {
+            const frame = document.getElementById('rws-frame');
+            const title = document.getElementById('rws-title');
+            const btnHoek = document.getElementById('tab-hoek');
+            const btnDord = document.getElementById('tab-dord');
+
+            btnHoek.classList.remove('active');
+            btnDord.classList.remove('active');
+
+            if (station === 'hoek') {
+                frame.src = "https://waterinfo.rws.nl/publiek/waterhoogte/Hoek-van-Holland%28HOEK%29/details";
+                title.textContent = "Hoek van Holland Live";
+                btnHoek.classList.add('active');
+            } else if (station === 'dord') {
+                frame.src = "https://waterinfo.rws.nl/publiek/waterhoogte/Dordrecht%28DORD%29/details";
+                title.textContent = "Dordrecht Live";
+                btnDord.classList.add('active');
+            }
+        }
+
+        const refreshBtn = document.getElementById('refresh-btn');
+        const rwsFrame = document.getElementById('rws-frame');
+        let autoRefreshInterval = null;
+        let pressTimer;
+        let isLongPress = false;
+
+        function refreshRWS() {
+            rwsFrame.src = rwsFrame.src;
+        }
+
+        function startAutoMode() {
+            refreshBtn.classList.add('auto-active');
+            refreshRWS();
+            autoRefreshInterval = setInterval(refreshRWS, 600000); 
+        }
+
+        function stopAutoMode() {
+            refreshBtn.classList.remove('auto-active');
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+        }
+
+        const startPress = () => {
+            isLongPress = false;
+            pressTimer = setTimeout(() => {
+                isLongPress = true;
+                if (!autoRefreshInterval) {
+                    startAutoMode();
+                } else {
+                    stopAutoMode();
+                }
+            }, 1000);
+        };
+
+        const endPress = () => {
+            clearTimeout(pressTimer);
+            if (!isLongPress) {
+                refreshRWS();
+            }
+        };
+
+        refreshBtn.addEventListener('mousedown', startPress);
+        refreshBtn.addEventListener('mouseup', endPress);
+        refreshBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startPress(); });
+        refreshBtn.addEventListener('touchend', endPress);
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('nl-NL', { hour12: false });
+            document.getElementById('date').textContent = now.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>
