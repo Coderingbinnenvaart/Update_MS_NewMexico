@@ -35,43 +35,55 @@
         input:focus { border-color: #38bdf8; }
         
         .marge-badge {
-            padding: 4px 12px;
+            padding: 6px 14px;
             border-radius: 20px;
-            font-weight: 700;
-            min-width: 90px;
+            font-weight: 800;
+            min-width: 100px;
             text-align: center;
+        }
+
+        /* Zorgt dat de bruggen altijd onder elkaar staan */
+        .bridge-list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
     </style>
 </head>
 <body class="py-12 px-4">
 
-    <div class="max-w-7xl mx-auto mb-10 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-sky-500 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-sky-500/20">B</div>
-            <h1 class="text-2xl font-black tracking-tight">BRUGHOGTE<span class="text-sky-500">MONITOR</span></h1>
-        </div>
-        <div class="glass-panel px-6 py-3 flex items-center gap-4">
-            <span class="text-xs font-bold text-sky-400 uppercase">Scheepshoogte</span>
-            <div class="flex items-center gap-2">
-                <input type="number" id="global-ship-height" step="0.01" class="w-20 text-center font-bold text-lg">
-                <span class="text-white/50 font-bold">m</span>
+    <div class="max-w-4xl mx-auto mb-10 space-y-6">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-sky-500 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-sky-500/20">B</div>
+                <h1 class="text-2xl font-black tracking-tight">BRUGHOGTE<span class="text-sky-500">MONITOR</span></h1>
+            </div>
+            <div class="glass-panel px-6 py-3 flex items-center gap-4">
+                <span class="text-xs font-bold text-sky-400 uppercase">Schip</span>
+                <div class="flex items-center gap-2">
+                    <input type="number" id="global-ship-height" step="0.01" class="w-20 text-center font-bold text-lg">
+                    <span class="text-white/50 font-bold">m</span>
+                </div>
             </div>
         </div>
+        
+        <div id="alarm-container"></div>
     </div>
 
-    <main class="max-w-7xl mx-auto space-y-12">
+    <main class="max-w-4xl mx-auto space-y-16">
         
         <section>
             <div class="flex items-center gap-4 mb-6">
-                <h2 class="text-xl font-extrabold tracking-wider text-white/90">DUITSLAND</h2>
+                <h2 class="text-xl font-extrabold tracking-wider text-white/90">DUITSLAND (RHEIN)</h2>
                 <div class="h-[1px] flex-grow bg-white/10"></div>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="space-y-6">
                 <div class="glass-panel p-5">
-                    <h3 class="text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-4">Pegel (cm)</h3>
-                    <div id="ws-list-de" class="space-y-3"></div>
+                    <h3 class="text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-4">Pegel locaties (cm)</h3>
+                    <div id="ws-list-de" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
                 </div>
-                <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4" id="br-list-de"></div>
+                <div id="br-list-de" class="bridge-list-container"></div>
             </div>
         </section>
 
@@ -80,21 +92,20 @@
                 <h2 class="text-xl font-extrabold tracking-wider text-white/90">NEDERLAND</h2>
                 <div class="h-[1px] flex-grow bg-white/10"></div>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="space-y-6">
                 <div class="glass-panel p-5">
-                    <h3 class="text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-4">Waterstand (cm)</h3>
-                    <div id="ws-list-nl" class="space-y-3"></div>
+                    <h3 class="text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-4">Waterstand locaties (cm)</h3>
+                    <div id="ws-list-nl" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
                 </div>
-                <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4" id="br-list-nl"></div>
+                <div id="br-list-nl" class="bridge-list-container"></div>
             </div>
         </section>
-
-        <div id="alarm-container" class="max-w-2xl mx-auto"></div>
 
     </main>
 
     <script>
-        // DATA
+        // VOLLEDIGE DATASET
         const data = {
             de: {
                 ws: [
@@ -144,61 +155,58 @@
             }
         };
 
-        function saveAll() {
+        // OPSLAAN & LADEN
+        function saveToLocal() {
             const shipHeight = document.getElementById('global-ship-height').value;
-            const values = {};
-            document.querySelectorAll('input[data-ws-id]').forEach(input => {
-                values[input.dataset.wsId] = input.value;
+            const wsValues = {};
+            document.querySelectorAll('input[data-ws-id]').forEach(el => {
+                wsValues[el.dataset.wsId] = el.value;
             });
-            localStorage.setItem('monitor_shipHeight', shipHeight);
-            localStorage.setItem('monitor_wsValues', JSON.stringify(values));
+            localStorage.setItem('monitor_height', shipHeight);
+            localStorage.setItem('monitor_values', JSON.stringify(wsValues));
         }
 
-        function loadAll() {
-            const shipHeight = localStorage.getItem('monitor_shipHeight') || 4.00;
-            const wsValues = JSON.parse(localStorage.getItem('monitor_wsValues') || '{}');
+        function loadFromLocal() {
+            const savedHeight = localStorage.getItem('monitor_height');
+            const savedValues = JSON.parse(localStorage.getItem('monitor_values') || '{}');
             
-            document.getElementById('global-ship-height').value = shipHeight;
-            
-            // Update data objects with saved values
-            [data.de.ws, data.nl.ws].flat().forEach(ws => {
-                if(wsValues[ws.id]) ws.val = wsValues[ws.id];
+            if (savedHeight) document.getElementById('global-ship-height').value = savedHeight;
+            else document.getElementById('global-ship-height').value = "4.00";
+
+            [...data.de.ws, ...data.nl.ws].forEach(ws => {
+                if (savedValues[ws.id]) ws.val = savedValues[ws.id];
             });
         }
 
-        function render() {
-            renderWSList(data.de.ws, 'ws-list-de');
-            renderWSList(data.nl.ws, 'ws-list-nl');
-            renderBRList(data.de.br, data.de.ws, 'br-list-de');
-            renderBRList(data.nl.br, data.nl.ws, 'br-list-nl');
-            updateCalculations();
-        }
-
-        function renderWSList(wsArray, targetId) {
+        // RENDERING
+        function renderWS(wsArray, targetId) {
             const container = document.getElementById(targetId);
             container.innerHTML = wsArray.map(ws => `
-                <div class="flex items-center justify-between p-2 rounded-lg bg-white/5">
-                    <span class="text-sm font-semibold">${ws.name}</span>
+                <div class="flex flex-col p-2 rounded-lg bg-black/20 border border-white/5">
+                    <span class="text-[10px] text-white/50 uppercase font-bold mb-1">${ws.name}</span>
                     <input type="number" data-ws-id="${ws.id}" value="${ws.val}" 
-                           class="w-16 text-right font-bold text-sky-400" 
+                           class="w-full text-center font-bold text-sky-400 bg-transparent border-none p-0" 
                            oninput="updateVal('${ws.id}', this.value)">
                 </div>
             `).join('');
         }
 
-        function renderBRList(brArray, wsArray, targetId) {
+        function renderBR(brArray, wsArray, targetId) {
             const container = document.getElementById(targetId);
             container.innerHTML = brArray.map(br => {
                 const ws = wsArray.find(w => w.id === br.loc);
                 return `
-                    <div class="glass-panel p-4 flex items-center justify-between border-l-4 border-l-sky-500">
+                    <div class="glass-panel p-4 flex items-center justify-between border-l-4 border-l-sky-500 hover:bg-white/5 transition-colors">
                         <div>
-                            <h4 class="font-bold text-sm text-white">${br.name}</h4>
-                            <p class="text-[9px] text-white/40 uppercase tracking-widest">${ws.name}</p>
+                            <h4 class="font-bold text-base text-white">${br.name}</h4>
+                            <p class="text-[10px] text-white/40 uppercase tracking-widest">Referentie: ${ws.name}</p>
                         </div>
-                        <div class="flex flex-col items-end gap-1">
-                            <span id="dvh-${br.id}" class="text-xs font-mono text-white/60">--</span>
-                            <div id="marge-${br.id}" class="marge-badge status-ok text-xs">--</div>
+                        <div class="flex items-center gap-6">
+                            <div class="text-right">
+                                <span class="block text-[10px] text-white/40 uppercase">Doorvaart</span>
+                                <span id="dvh-${br.id}" class="font-mono font-bold text-lg text-white/80">--</span>
+                            </div>
+                            <div id="marge-${br.id}" class="marge-badge status-ok">--</div>
                         </div>
                     </div>
                 `;
@@ -206,12 +214,13 @@
         }
 
         function updateVal(id, val) {
-            [data.de.ws, data.nl.ws].flat().find(w => w.id === id).val = val;
-            saveAll();
-            updateCalculations();
+            const item = [...data.de.ws, ...data.nl.ws].find(w => w.id === id);
+            if(item) item.val = val;
+            saveToLocal();
+            calculate();
         }
 
-        function updateCalculations() {
+        function calculate() {
             const shipHeight = parseFloat(document.getElementById('global-ship-height').value) || 0;
             const allBridges = [...data.de.br, ...data.nl.br];
             const allWS = [...data.de.ws, ...data.nl.ws];
@@ -224,9 +233,9 @@
                 const dvhEl = document.getElementById(`dvh-${br.id}`);
                 const margeEl = document.getElementById(`marge-${br.id}`);
 
-                if(dvhEl) dvhEl.innerText = `DVH: ${currentDvh.toFixed(2)}m`;
+                if(dvhEl) dvhEl.innerText = currentDvh.toFixed(2) + 'm';
                 if(margeEl) {
-                    margeEl.innerText = `${marge.toFixed(2)}m`;
+                    margeEl.innerText = marge.toFixed(2) + 'm';
                     margeEl.className = 'marge-badge ' + (marge < 0 ? 'status-danger' : marge < 0.5 ? 'status-warn' : 'status-ok');
                 }
             });
@@ -234,20 +243,24 @@
             // Marke Alarms
             const alarms = [];
             data.de.ws.forEach(w => {
-                if(w.val >= w.m2) alarms.push(`<div class="p-3 status-danger rounded-lg mb-2 font-bold text-center">🚨 ${w.name.toUpperCase()}: MARKE II OVERSCHREDEN</div>`);
-                else if(w.val >= w.m1) alarms.push(`<div class="p-3 status-warn rounded-lg mb-2 font-bold text-center">⚠️ ${w.name.toUpperCase()}: MARKE I OVERSCHREDEN</div>`);
+                if(w.val >= w.m2) alarms.push(`<div class="p-4 status-danger rounded-xl mb-3 font-black text-center shadow-lg">🚨 ${w.name.toUpperCase()}: STOPPEN (MARKE II)</div>`);
+                else if(w.val >= w.m1) alarms.push(`<div class="p-4 status-warn rounded-xl mb-3 font-black text-center shadow-lg">⚠️ ${w.name.toUpperCase()}: MARKE I</div>`);
             });
             document.getElementById('alarm-container').innerHTML = alarms.join('');
         }
 
         document.getElementById('global-ship-height').oninput = () => {
-            saveAll();
-            updateCalculations();
+            saveToLocal();
+            calculate();
         };
 
-        // Start
-        loadAll();
-        render();
+        // Start applicatie
+        loadFromLocal();
+        renderWS(data.de.ws, 'ws-list-de');
+        renderWS(data.nl.ws, 'ws-list-nl');
+        renderBR(data.de.br, data.de.ws, 'br-list-de');
+        renderBR(data.nl.br, data.nl.ws, 'br-list-nl');
+        calculate();
     </script>
 </body>
 </html>
