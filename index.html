@@ -166,12 +166,30 @@
     </div>
 
     <nav class="navbar">
+        <div class="relative ml-4">
+            <button onclick="toggleSettingsMenu()" class="text-white hover:text-blue-400 transition-colors focus:outline-none flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+            
+            <div id="settings-menu" class="hidden absolute left-0 mt-4 w-48 bg-slate-900 border border-blue-500/30 rounded-xl shadow-2xl overflow-hidden z-[2000]">
+                <a href="update://" class="flex items-center gap-3 px-4 py-3 hover:bg-blue-600/20 text-white transition-colors border-b border-white/5">
+                    <span class="text-lg">⚙️</span>
+                    <span class="text-xs font-bold uppercase tracking-wider">Update</span>
+                </a>
+            </div>
+        </div>
+
         <h1>MS NEW MEXICO</h1>
+
         <div class="ml-auto text-right">
             <div id="clock" class="text-2xl font-black text-white">00:00:00</div>
             <div id="date" class="text-[9px] text-blue-400 font-bold uppercase tracking-[3px]">Laden...</div>
         </div>
     </nav>
+
 
     <aside class="side-panel left">
         <h2 class="text-[0.9rem] font-black tracking-[4px] text-blue-400 uppercase mb-6 text-center border-b border-blue-900/30 pb-2">Scheepsgegevens</h2>
@@ -267,6 +285,7 @@
             renderStations(document.getElementById('station-filter').value);
         }
 
+
         function renderStations(filter = '') {
             const list = document.getElementById('station-list');
             list.innerHTML = '';
@@ -341,6 +360,23 @@
         refreshBtn.addEventListener('mouseup', () => { clearTimeout(pressTimer); refreshRWS(); });
 
         window.onload = () => { switchRWS('Hoek van Holland'); updateClock(); setInterval(updateClock, 1000); };
+
+
+function toggleSettingsMenu() {
+    const menu = document.getElementById('settings-menu');
+    menu.classList.toggle('hidden');
+}
+
+// Sluit het menu als je buiten het menu klikt
+window.addEventListener('click', function(e) {
+    const menu = document.getElementById('settings-menu');
+    const btn = menu.previousElementSibling;
+    if (!menu.classList.contains('hidden')) {
+        if (!menu.contains(e.target) && !btn.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+    }
+});
     </script>
 </body>
 </html>
