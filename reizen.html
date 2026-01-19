@@ -32,6 +32,13 @@
             opacity: 1;
             margin-bottom: 2.5rem;
         }
+
+        /* Drag & Drop Styling */
+        #drop-zone.drag-over {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            transform: scale(1.02);
+        }
     </style>
 </head>
 <body class="pb-12">
@@ -59,7 +66,6 @@
             <select id="filter-jaar" onchange="laadDataVanCloud()" class="bg-slate-900 border border-white/10 rounded-lg px-3 py-1 text-xs font-bold text-white outline-none">
                 <option value="2026">2026</option>
                 <option value="2025">2025</option>
-                <option value="2024">2024</option>
             </select>
             <button onclick="laadDataVanCloud()" class="text-slate-400 hover:text-white transition-colors px-2">
                 <i class="fas fa-sync-alt" id="refresh-icon"></i>
@@ -99,12 +105,12 @@
             <div class="glass-card p-8 border-emerald-500/20 flex flex-col justify-center">
                 <h3 class="font-bold mb-6 text-white text-sm tracking-widest uppercase text-center">BAPLIE Automatische Analyse</h3>
                 <div class="space-y-4">
-                    <div class="border-2 border-dashed border-white/10 rounded-xl p-10 text-center hover:border-emerald-500/50 transition-colors bg-white/[0.02]">
+                    <div id="drop-zone" class="border-2 border-dashed border-white/10 rounded-xl p-10 text-center hover:border-emerald-500/50 transition-all bg-white/[0.02] cursor-pointer">
                         <input type="file" id="baplie-file" class="hidden" onchange="analyseerBaplie(event)">
                         <label for="baplie-file" class="cursor-pointer block">
                             <i class="fas fa-file-invoice text-4xl text-emerald-500 mb-4"></i>
-                            <p class="text-sm text-white font-bold mb-1">Upload BAPLIE</p>
-                            <p class="text-[10px] text-slate-500 uppercase tracking-widest">Auto-detect data</p>
+                            <p class="text-sm text-white font-bold mb-1">Sleep BAPLIE hierheen</p>
+                            <p class="text-[10px] text-slate-500 uppercase tracking-widest">Of klik om te selecteren</p>
                         </label>
                     </div>
                     <p id="baplie-status" class="text-[10px] font-bold text-center uppercase tracking-widest h-10"></p>
@@ -131,13 +137,39 @@
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwZ0RhD4ZbytP12l9s6TwIaws_JXJSNnnw5rEIkM-2S1Qufm1-Tl2wYkuDOQe8FOL3T4Q/exec';
         let actueleData = [];
 
+        // --- DRAG AND DROP LOGICA ---
+        const dropZone = document.getElementById('drop-zone');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, e => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over'), false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                analyseerBaplie({ target: { files: files } });
+            }
+        });
+        // --- EINDE DRAG AND DROP ---
+
         function toggleInvoer() {
             const sectie = document.getElementById('input-sectie');
             sectie.classList.toggle('visible');
             if(sectie.classList.contains('visible')) sectie.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Datum formatter hulpfunctie
         function formatteerDatum(datumString) {
             if(!datumString) return "-";
             const d = new Date(datumString);
@@ -155,13 +187,8 @@
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'GET', redirect: 'follow' });
                 const data = await response.json();
-                
-                // Filteren op jaar
                 actueleData = data.filter(r => r.datum && r.datum.includes(jaar));
-                
-                // SORTEREN: Nieuwste datum bovenaan
                 actueleData.sort((a, b) => new Date(b.datum) - new Date(a.datum));
-                
                 renderLijst(actueleData);
                 updateStats(actueleData);
                 document.getElementById('sync-text').innerText = "Cloud Verbonden";
@@ -174,32 +201,24 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             const jaar = document.getElementById('filter-jaar').value;
-            
             const primaryColor = [15, 23, 42]; 
-            const accentColor = [37, 99, 235];
-
             doc.setFillColor(...primaryColor);
             doc.rect(0, 0, 210, 45, 'F');
-            
             doc.setTextColor(255, 255, 255);
             doc.setFont("helvetica", "bold");
             doc.setFontSize(24);
             doc.text("MS NEW MEXICO", 20, 20);
-            
             doc.setFont("helvetica", "normal");
             doc.setFontSize(10);
             doc.text("OFFICIEEL TRANSPORT OVERZICHT", 20, 28);
             doc.text(`Periode: Januari - December ${jaar}`, 20, 34);
-
             doc.setFillColor(245, 245, 245);
             doc.roundedRect(15, 50, 180, 25, 3, 3, 'F');
-            
             doc.setTextColor(100, 100, 100);
             doc.setFontSize(8);
             doc.text("TOTAAL REIZEN", 30, 58);
             doc.text("TOTAAL CONTAINERS (TEU)", 85, 58);
             doc.text("TOTAAL TONNAGE", 150, 58);
-
             doc.setTextColor(0, 0, 0);
             doc.setFontSize(14);
             doc.setFont("helvetica", "bold");
@@ -207,7 +226,6 @@
             doc.text(document.getElementById('stat-containers').innerText, 85, 68);
             doc.text(document.getElementById('stat-tonnage').innerText + " T", 150, 68);
 
-            // Tabel data met geformatteerde datums
             const tabelData = actueleData.map(r => [
                 formatteerDatum(r.datum), 
                 r.nr, 
@@ -220,35 +238,16 @@
                 head: [['Datum', 'Reisnummer', 'Containers', 'Tonnage']],
                 body: tabelData,
                 theme: 'striped',
-                headStyles: { 
-                    fillColor: primaryColor, 
-                    textColor: [255, 255, 255],
-                    fontStyle: 'bold',
-                    halign: 'center'
-                },
-                columnStyles: {
-                    0: { halign: 'left' },
-                    2: { halign: 'right' },
-                    3: { halign: 'right' }
-                },
+                headStyles: { fillColor: primaryColor, textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+                columnStyles: { 0: { halign: 'left' }, 2: { halign: 'right' }, 3: { halign: 'right' } },
                 styles: { font: "helvetica", fontSize: 9 },
                 margin: { left: 15, right: 15 }
             });
-
-            const pageCount = doc.internal.getNumberOfPages();
-            for(let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.setFontSize(8);
-                doc.setTextColor(150, 150, 150);
-                doc.text(`Gegenereerd op: ${new Date().toLocaleString('nl-NL')}`, 15, 285);
-                doc.text(`Pagina ${i} van ${pageCount}`, 180, 285);
-            }
 
             doc.save(`MS-New-Mexico-Rapport-${jaar}.pdf`);
         }
 
         async function stuurNaarCloud(nr, kisten, ton) {
-            // Gebruik ISO string voor opslag, wordt bij renderen geformatteerd
             const params = new URLSearchParams({
                 datum: new Date().toISOString(),
                 nr: nr, containers: kisten, tonnage: ton
@@ -272,6 +271,8 @@
             const file = e.target.files[0];
             const status = document.getElementById('baplie-status');
             const reader = new FileReader();
+            status.innerText = "Bezig met analyseren...";
+            
             reader.onload = function(progressEvent) {
                 const segments = progressEvent.target.result.split("'");
                 let containers = 0; let totaalGewicht = 0; let gevondenReisNr = "";
@@ -295,9 +296,12 @@
                     }
                 });
                 if (gevondenReisNr) {
-                    status.innerHTML = `Detect: ${gevondenReisNr} | ${containers} kisten | ${totaalGewicht.toFixed(1)} T`;
+                    status.innerHTML = `Gevonden: ${gevondenReisNr} | ${containers} stuks | ${totaalGewicht.toFixed(1)} T`;
                     status.className = "text-[10px] font-bold text-center text-emerald-500";
                     stuurNaarCloud(gevondenReisNr, containers, totaalGewicht.toFixed(1));
+                } else {
+                    status.innerText = "Geen geldige data gevonden in bestand.";
+                    status.className = "text-[10px] font-bold text-center text-red-500";
                 }
             };
             reader.readAsText(file);
