@@ -17,6 +17,18 @@
             --glass-border: rgba(255, 255, 255, 0.1);
         }
 
+        /* Animatie voor het knipperende tandwiel */
+        @keyframes pulse-red {
+            0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(255, 0, 0, 0.5)); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 15px rgba(255, 0, 0, 1)); color: #ff4d4d; }
+            100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(255, 0, 0, 0.5)); }
+        }
+
+        .update-available {
+            animation: pulse-red 2s infinite;
+            color: #ff4d4d !important;
+        }
+
         #license-blocker {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -167,9 +179,9 @@
 
     <nav class="navbar">
         <div class="relative ml-4">
-            <button onclick="toggleSettingsMenu()" class="text-white hover:text-blue-400 transition-colors focus:outline-none flex items-center">
+            <button onclick="toggleSettingsMenu()" id="settings-btn" class="text-white hover:text-blue-400 transition-colors focus:outline-none flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
             </button>
@@ -252,6 +264,11 @@
     </main>
 
     <script>
+        // --- UPDATE CONFIGURATIE ---
+        const CURRENT_VERSION = "1.0.0"; 
+        const GITHUB_RAW_URL = "https://raw.githubusercontent.com/Coderingbinnenvaart/Update_MS_NewMexico/refs/heads/main/index.html";
+        // ---------------------------
+
         const expirationDate = new Date('2026-12-31');
         if (new Date() > expirationDate) { document.getElementById('license-blocker').style.visibility = 'visible'; }
 
@@ -277,6 +294,25 @@
         ];
 
         let favorites = JSON.parse(localStorage.getItem('ship_favorites')) || [];
+
+        // --- UPDATE CHECK FUNCTIE ---
+        async function checkForUpdates() {
+            try {
+                const response = await fetch(GITHUB_RAW_URL + '?t=' + new Date().getTime()); // Voorkom caching
+                const text = await response.text();
+                
+                // Zoek naar de tekst: const CURRENT_VERSION = "..."
+                const match = text.match(/const CURRENT_VERSION = "(.*?)"/);
+                
+                if (match && match[1] !== CURRENT_VERSION) {
+                    // Versie op GitHub is anders! Laat tandwiel knipperen.
+                    document.getElementById('settings-btn').classList.add('update-available');
+                    console.log("Nieuwe update gevonden: " + match[1]);
+                }
+            } catch (error) {
+                console.error("Update check mislukt:", error);
+            }
+        }
 
         function toggleFavorite(id, event) {
             event.stopPropagation();
@@ -360,7 +396,16 @@
         }, 1000); });
         refreshBtn.addEventListener('mouseup', () => { clearTimeout(pressTimer); refreshRWS(); });
 
-        window.onload = () => { switchRWS('Hoek van Holland'); updateClock(); setInterval(updateClock, 1000); };
+        window.onload = () => { 
+            switchRWS('Hoek van Holland'); 
+            updateClock(); 
+            setInterval(updateClock, 1000); 
+            
+            // Check voor updates bij opstarten
+            checkForUpdates();
+            // Check elke 30 minuten opnieuw
+            setInterval(checkForUpdates, 1800000);
+        };
 
 
 function toggleSettingsMenu() {
@@ -368,10 +413,9 @@ function toggleSettingsMenu() {
     menu.classList.toggle('hidden');
 }
 
-// Sluit het menu als je buiten het menu klikt
 window.addEventListener('click', function(e) {
     const menu = document.getElementById('settings-menu');
-    const btn = menu.previousElementSibling;
+    const btn = document.getElementById('settings-btn');
     if (!menu.classList.contains('hidden')) {
         if (!menu.contains(e.target) && !btn.contains(e.target)) {
             menu.classList.add('hidden');
@@ -381,4 +425,3 @@ window.addEventListener('click', function(e) {
     </script>
 </body>
 </html>
-
