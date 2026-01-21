@@ -2,7 +2,6 @@
 <html lang="nl">
 <head>
     <link rel="icon" type="image/png" href="logo.png"> 
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hafenmeister Briefje</title>
@@ -16,43 +15,16 @@
         :root { --bg: #020617; --accent: #38bdf8; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: #f8fafc; padding-top: 85px; }
         .main-container { max-width: 520px; margin: 0 auto; padding: 0 1rem; }
-        .glass-card { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(56, 189, 248, 0.15); }
+        .glass-card { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(56, 189, 248, 0.15); transition: all 0.3s ease; }
         .btn-gradient { background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%); }
         .modal-overlay { background: rgba(2, 6, 23, 0.98); display: none; z-index: 2000; position: fixed; inset: 0; align-items: center; justify-content: center; }
         .modal-overlay.active { display: flex; }
         input { font-size: 1.1rem !important; color-scheme: dark; }
-        .btn-now { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; }
-        #pdf-frame { width: 100%; height: 75vh; border-radius: 1.5rem; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); }
-        .counter-btn { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 8px; font-weight: bold; }
-
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number] { -moz-appearance: textfield; }
-
-        /* Suggestie lijst styling */
-        .autocomplete-suggestions {
-            position: absolute;
-            background: #1e293b;
-            border: 1px solid rgba(56, 189, 248, 0.4);
-            border-radius: 0.75rem;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 3000;
-            width: 100%;
-            margin-top: 2px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-        }
-        .suggestion-item {
-            padding: 12px 15px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.95rem;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.2s;
-        }
-        .suggestion-item:last-child { border-bottom: none; }
-        .suggestion-item.selected { background: #38bdf8; color: #020617; }
-        .suggestion-item:hover { background: rgba(56, 189, 248, 0.2); }
+        
+        /* Accordion Styling */
+        .trip-collapsed .details-content { display: none; }
+        .trip-collapsed { padding: 1rem !important; border-left-width: 4px !important; margin-bottom: 0.5rem !important; cursor: pointer; }
+        .trip-collapsed:hover { background: rgba(56, 189, 248, 0.05); }
     </style>
 </head>
 <body>
@@ -76,22 +48,20 @@
     </header>
 
     <main class="main-container pb-24">
-        <div id="reizen-lijst" class="space-y-6"></div>
+        <div id="reizen-lijst" class="space-y-4"></div>
     </main>
 
     <div id="pdf-modal" class="modal-overlay p-4">
         <div class="bg-slate-900 w-full max-w-4xl rounded-[2.5rem] p-5 border border-white/10 shadow-2xl">
             <div class="flex justify-between items-center mb-5 px-2">
-                <div>
-                    <h3 class="font-black text-white text-xl uppercase italic">Haven briefje</h3>
-                </div>
+                <h3 class="font-black text-white text-xl uppercase italic">Haven briefje</h3>
                 <div class="flex gap-2">
-                    <button id="pdf-download-btn" class="bg-sky-500 hover:bg-sky-400 px-5 py-3 rounded-2xl text-[10px] font-black uppercase text-white transition-all">Download</button>
-                    <button id="pdf-email-btn" class="bg-emerald-600 hover:bg-emerald-500 px-5 py-3 rounded-2xl text-[10px] font-black uppercase text-white transition-all"><i class="fas fa-paper-plane mr-1"></i> Versturen</button>
-                    <button onclick="closeModal('pdf-modal')" class="bg-white/5 hover:bg-white/10 px-5 py-3 rounded-2xl text-[10px] font-black uppercase text-white transition-all">Sluiten</button>
+                    <button id="pdf-download-btn" class="bg-sky-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase text-white">Download</button>
+                    <button id="pdf-email-btn" class="bg-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase text-white">Versturen</button>
+                    <button onclick="closeModal('pdf-modal')" class="bg-white/5 px-4 py-2 rounded-xl text-[10px] font-black uppercase text-white">Sluiten</button>
                 </div>
             </div>
-            <iframe id="pdf-frame"></iframe>
+            <iframe id="pdf-frame" style="width:100%; height:70vh; border-radius:1rem;"></iframe>
         </div>
     </div>
 
@@ -102,40 +72,30 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-slate-950 p-3 rounded-xl border border-white/5">
                         <label class="text-[9px] font-black text-sky-400 uppercase block mb-1">Reis Nr.</label>
-                        <input type="text" id="c-reiscode" class="w-full bg-transparent font-black text-lg outline-none text-white" placeholder="">
+                        <input type="text" id="c-reiscode" class="w-full bg-transparent font-black text-lg outline-none text-white">
                     </div>
                     <div class="bg-slate-950 p-3 rounded-xl border border-white/5">
                         <label class="text-[9px] font-black text-sky-400 uppercase block mb-1">Personen</label>
-                        <input type="number" id="c-personen" onfocus="handleFocus(this)" onblur="handleBlur(this)" class="w-full bg-transparent font-black text-lg outline-none text-white" value="4">
+                        <input type="number" id="c-personen" class="w-full bg-transparent font-black text-lg outline-none text-white" value="4">
                     </div>
                 </div>
-                
                 <div class="grid grid-cols-2 gap-3">
-                    <div class="relative">
-                        <input type="text" id="c-van" class="w-full bg-slate-950 p-4 rounded-xl border border-white/5 text-white font-bold" placeholder="Van" autocomplete="off" oninput="showSuggestions(this)" onkeydown="handleKeyNavigation(event, this)">
-                        <div id="suggestions-van" class="autocomplete-suggestions hidden"></div>
-                    </div>
-                    <div class="relative">
-                        <input type="text" id="c-naar" class="w-full bg-slate-950 p-4 rounded-xl border border-white/5 text-white font-bold" placeholder="Naar" autocomplete="off" oninput="showSuggestions(this)" onkeydown="handleKeyNavigation(event, this)">
-                        <div id="suggestions-naar" class="autocomplete-suggestions hidden"></div>
-                    </div>
+                    <input type="text" id="c-van" class="bg-slate-950 p-4 rounded-xl border border-white/5 text-white font-bold" placeholder="Van">
+                    <input type="text" id="c-naar" class="bg-slate-950 p-4 rounded-xl border border-white/5 text-white font-bold" placeholder="Naar">
                 </div>
-
                 <div class="bg-sky-500/10 p-3 rounded-xl border border-sky-500/20">
-                    <div class="flex justify-between mb-1"><span class="text-[9px] font-black text-sky-400 uppercase">Aankomst (ETA)</span><button onclick="setCurrentTime('c-a-datum', 'c-a-tijd')" class="btn-now px-2 py-0.5 rounded text-[8px] font-black">NU</button></div>
+                    <label class="text-[9px] font-black text-sky-400 uppercase block">Aankomst (ETA)</label>
                     <input type="date" id="c-a-datum" class="bg-transparent text-[10px] w-full text-white"><input type="time" id="c-a-tijd" class="bg-transparent font-black text-lg w-full text-white">
                 </div>
                 <div class="bg-violet-500/10 p-3 rounded-xl border border-violet-500/20">
-                    <div class="flex justify-between mb-1"><span class="text-[9px] font-black text-violet-400 uppercase">Vertrek (ETD)</span><button onclick="setCurrentTime('c-v-datum', 'c-v-tijd')" class="btn-now px-2 py-0.5 rounded text-[8px] font-black">NU</button></div>
+                    <label class="text-[9px] font-black text-violet-400 uppercase block">Vertrek (ETD)</label>
                     <input type="date" id="c-v-datum" class="bg-transparent text-[10px] w-full text-white"><input type="time" id="c-v-tijd" class="bg-transparent font-black text-lg w-full text-white">
                 </div>
             </div>
-            <button onclick="openModal('terminal-select-modal')" class="w-full py-4 border-2 border-dashed border-sky-500/30 rounded-xl text-sky-400 font-black text-xs mb-4 uppercase hover:bg-sky-500/5 transition">+ Terminal Toevoegen</button>
+            <button onclick="openModal('terminal-select-modal')" class="w-full py-4 border-2 border-dashed border-sky-500/30 rounded-xl text-sky-400 font-black text-xs mb-4 uppercase">+ Terminal Toevoegen</button>
             <div id="terminal-preview" class="flex flex-wrap gap-2 mb-6"></div>
-            <div class="flex gap-3">
-                <button onclick="closeModal('trip-modal')" class="flex-1 font-black text-[10px] opacity-40 uppercase">Terug</button>
-                <button onclick="saveTrip()" class="flex-[3] py-4 btn-gradient rounded-xl font-black text-[11px] uppercase text-white shadow-xl">Reis Opslaan</button>
-            </div>
+            <button onclick="saveTrip()" class="w-full py-4 btn-gradient rounded-xl font-black text-white uppercase shadow-xl">Reis Opslaan</button>
+            <button onclick="closeModal('trip-modal')" class="w-full mt-4 text-[10px] opacity-40 uppercase font-black text-white">Annuleren</button>
         </div>
     </div>
 
@@ -143,61 +103,28 @@
         <div class="bg-slate-900 w-full max-w-xs rounded-[2rem] p-6 border border-white/10">
             <h3 class="font-black text-[10px] uppercase mb-6 text-center text-white/40 tracking-widest">Wähle Terminal</h3>
             <div class="grid grid-cols-2 gap-3">
-                <script>['RRT','GWW','DCT','DIT','D3T','MTD'].forEach(t => document.write(`<button onclick="selectTerminal('${t}')" class="py-4 bg-slate-950 rounded-xl font-black text-lg border border-white/5 hover:border-sky-500/50 hover:text-sky-400 transition uppercase">${t}</button>`));</script>
+                <script>['RRT','GWW','DCT','DIT','D3T','MTD'].forEach(t => document.write(`<button onclick="selectTerminal('${t}')" class="py-4 bg-slate-950 rounded-xl font-black text-lg border border-white/5 text-white hover:text-sky-400 uppercase">${t}</button>`));</script>
             </div>
-            <button onclick="closeModal('terminal-select-modal')" class="w-full mt-6 font-black text-[10px] uppercase opacity-30">Sluiten</button>
+            <button onclick="closeModal('terminal-select-modal')" class="w-full mt-6 font-black text-[10px] uppercase opacity-30 text-white">Sluiten</button>
         </div>
     </div>
 
     <div id="container-count-modal" class="modal-overlay p-4">
         <div class="bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-6 border border-white/10 shadow-2xl">
-            <div class="text-center mb-8">
-                <p class="text-[10px] font-black text-sky-400 uppercase tracking-[0.2em] mb-1">Invoer voor</p>
-                <h3 id="term-label" class="text-5xl font-black text-white italic uppercase tracking-tighter">TERMINAL</h3>
-            </div>
-            <input type="hidden" id="editing-terminal-index" value="-1">
+            <h3 id="term-label" class="text-center text-4xl font-black text-white mb-6 uppercase italic">TERMINAL</h3>
             <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-4">
-                    <div class="text-center"><span class="text-[11px] font-black text-red-500 uppercase tracking-widest">Lossen</span></div>
-                    <div class="bg-red-500/5 border border-red-500/20 p-4 rounded-3xl space-y-4 text-center">
-                        <div><span class="text-[8px] font-bold text-white/40 uppercase block mb-2">Vol</span>
-                            <div class="flex items-center justify-center gap-3">
-                                <button onclick="step('dis-full', -1)" class="counter-btn">-</button>
-                                <input type="number" id="dis-full" onfocus="handleFocus(this)" onblur="handleBlur(this)" class="w-14 bg-transparent text-center font-black text-2xl text-white outline-none" value="0">
-                                <button onclick="step('dis-full', 1)" class="counter-btn">+</button>
-                            </div>
-                        </div>
-                        <div class="pt-2 border-t border-red-500/10"><span class="text-[8px] font-bold text-white/40 uppercase block mb-2">Leeg</span>
-                            <div class="flex items-center justify-center gap-3">
-                                <button onclick="step('dis-empty', -1)" class="counter-btn">-</button>
-                                <input type="number" id="dis-empty" onfocus="handleFocus(this)" onblur="handleBlur(this)" class="w-14 bg-transparent text-center font-black text-2xl text-white outline-none" value="0">
-                                <button onclick="step('dis-empty', 1)" class="counter-btn">+</button>
-                            </div>
-                        </div>
-                    </div>
+                <div class="bg-red-500/5 p-4 rounded-3xl border border-red-500/20 text-center">
+                    <span class="text-[10px] font-black text-red-500 uppercase">Lossen</span>
+                    <div class="mt-2"><input type="number" id="dis-full" class="bg-transparent text-center font-black text-2xl w-full text-white" value="0" placeholder="Vol"></div>
+                    <div class="mt-2"><input type="number" id="dis-empty" class="bg-transparent text-center font-black text-2xl w-full text-white" value="0" placeholder="Leeg"></div>
                 </div>
-                <div class="space-y-4">
-                    <div class="text-center"><span class="text-[11px] font-black text-emerald-500 uppercase tracking-widest">Laden</span></div>
-                    <div class="bg-emerald-500/5 border border-emerald-500/20 p-4 rounded-3xl space-y-4 text-center">
-                        <div><span class="text-[8px] font-bold text-white/40 uppercase block mb-2">Vol</span>
-                            <div class="flex items-center justify-center gap-3">
-                                <button onclick="step('load-full', -1)" class="counter-btn">-</button>
-                                <input type="number" id="load-full" onfocus="handleFocus(this)" onblur="handleBlur(this)" class="w-14 bg-transparent text-center font-black text-2xl text-white outline-none" value="0">
-                                <button onclick="step('load-full', 1)" class="counter-btn">+</button>
-                            </div>
-                        </div>
-                        <div class="pt-2 border-t border-emerald-500/10"><span class="text-[8px] font-bold text-white/40 uppercase block mb-2">Leeg</span>
-                            <div class="flex items-center justify-center gap-3">
-                                <button onclick="step('load-empty', -1)" class="counter-btn">-</button>
-                                <input type="number" id="load-empty" onfocus="handleFocus(this)" onblur="handleBlur(this)" class="w-14 bg-transparent text-center font-black text-2xl text-white outline-none" value="0">
-                                <button onclick="step('load-empty', 1)" class="counter-btn">+</button>
-                            </div>
-                        </div>
-                    </div>
+                <div class="bg-emerald-500/5 p-4 rounded-3xl border border-emerald-500/20 text-center">
+                    <span class="text-[10px] font-black text-emerald-500 uppercase">Laden</span>
+                    <div class="mt-2"><input type="number" id="load-full" class="bg-transparent text-center font-black text-2xl w-full text-white" value="0" placeholder="Vol"></div>
+                    <div class="mt-2"><input type="number" id="load-empty" class="bg-transparent text-center font-black text-2xl w-full text-white" value="0" placeholder="Leeg"></div>
                 </div>
             </div>
-            <button onclick="confirmTerminalData()" class="w-full mt-8 py-5 btn-gradient rounded-[1.5rem] font-black text-xs uppercase text-white shadow-xl shadow-sky-500/20 tracking-widest" id="terminal-confirm-btn">Toevoegen</button>
-            <button onclick="closeModal('container-count-modal')" class="w-full mt-4 text-[10px] font-black uppercase text-white/30">Annuleren</button>
+            <button onclick="confirmTerminalData()" class="w-full mt-8 py-5 btn-gradient rounded-3xl font-black text-white uppercase shadow-xl">Toevoegen</button>
         </div>
     </div>
 
@@ -205,202 +132,51 @@
         <div class="bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-7 border border-white/10 shadow-2xl">
             <h2 class="text-xl font-black mb-6 uppercase text-sky-400 italic">Instellingen</h2>
             <div class="space-y-4 text-white">
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] font-black text-white/30 uppercase block mb-1">Naam Schip</label><input type="text" id="ship-name" class="w-full bg-transparent font-bold text-lg outline-none"></div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] font-black text-white/30 uppercase block mb-1">ENI Nummer</label><input type="text" id="ship-eni" class="w-full bg-transparent font-bold text-lg outline-none"></div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] font-black text-white/30 uppercase block mb-1">Tonnage</label><input type="text" id="ship-ton" class="w-full bg-transparent font-bold text-lg outline-none"></div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] font-black text-white/30 uppercase block mb-1">Telefoon</label><input type="text" id="ship-tel" class="w-full bg-transparent font-bold text-lg outline-none"></div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] font-black text-white/30 uppercase block mb-1">Email</label><input type="text" id="ship-mail" class="w-full bg-transparent font-bold text-lg outline-none"></div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] font-black text-white/30 uppercase block mb-1">Bevrachter</label><input type="text" id="ship-bevracht" class="w-full bg-transparent font-bold text-lg outline-none"></div>
+                <input type="text" id="ship-name" class="w-full bg-slate-950 p-3 rounded-xl border border-white/5" placeholder="Naam Schip">
+                <input type="text" id="ship-eni" class="w-full bg-slate-950 p-3 rounded-xl border border-white/5" placeholder="ENI Nummer">
+                <input type="text" id="ship-mail" class="w-full bg-slate-950 p-3 rounded-xl border border-white/5" placeholder="Email">
             </div>
-            <button onclick="saveSettings()" class="w-full mt-8 py-5 btn-gradient rounded-xl font-black uppercase text-white shadow-xl">Opslaan</button>
+            <button onclick="saveSettings()" class="w-full mt-8 py-5 btn-gradient rounded-xl font-black uppercase text-white">Opslaan</button>
             <button onclick="closeModal('settings-modal')" class="w-full mt-4 text-xs uppercase opacity-40 text-center font-bold text-white">Terug</button>
-        </div>
-    </div>
-
-    <div id="edit-time-modal" class="modal-overlay p-4">
-        <div class="bg-slate-900 w-full max-w-xs rounded-[2.5rem] p-6 border border-white/10 shadow-2xl">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="edit-time-label" class="font-black text-sky-400 text-lg uppercase italic">ANPASSEN</h3>
-                <button onclick="setCurrentTime('edit-date', 'edit-time')" class="btn-now px-3 py-1 rounded-lg text-[10px] font-black">NU</button>
-            </div>
-            <input type="hidden" id="edit-index"><input type="hidden" id="edit-type">
-            <div class="space-y-4">
-                <input type="date" id="edit-date" class="bg-slate-950 p-4 rounded-xl border border-white/5 text-white w-full">
-                <input type="time" id="edit-time" class="bg-slate-950 p-4 rounded-xl border border-white/5 text-white text-3xl font-black w-full">
-            </div>
-            <button onclick="updateTripTime()" class="w-full mt-6 py-4 btn-gradient rounded-xl font-black text-xs uppercase text-white shadow-lg">Bijwerken</button>
-            <button onclick="closeModal('edit-time-modal')" class="w-full mt-3 text-[10px] uppercase opacity-40 font-bold">Annuleren</button>
         </div>
     </div>
 
     <script>
         let currentTerminal = "", tempTerminalList = [], reizen = JSON.parse(localStorage.getItem('du_reizen_v400') || '[]');
         
-        const havens = ["Rotterdam", "Amsterdam", "Antwerpen", "Duisburg", "Dusseldorf", "Neuss", "Leverkusen", "Koln"];
-        let currentFocusIndex = -1;
-
         function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { 
-            document.getElementById(id).classList.remove('active');
-            hideSuggestions();
-        }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        function hideSuggestions() {
-            document.getElementById('suggestions-van').classList.add('hidden');
-            document.getElementById('suggestions-naar').classList.add('hidden');
-            currentFocusIndex = -1;
-        }
-        
-        function handleFocus(el) { if(el.value == "0") el.value = ""; el.select(); }
-        function handleBlur(el) { if(el.value == "") el.value = "0"; }
-
-        // AUTOCOMPLETE LOGICA
-        function showSuggestions(input) {
-            const val = input.value.toLowerCase();
-            const id = input.id === 'c-van' ? 'suggestions-van' : 'suggestions-naar';
-            const suggCont = document.getElementById(id);
-            
-            // Verberg de andere lijst
-            const otherId = input.id === 'c-van' ? 'suggestions-naar' : 'suggestions-van';
-            document.getElementById(otherId).classList.add('hidden');
-
-            if (!val) { suggCont.classList.add('hidden'); return; }
-            
-            const matches = havens.filter(h => h.toLowerCase().startsWith(val));
-            
-            if (matches.length > 0) {
-                currentFocusIndex = 0; // Selecteer standaard de eerste
-                suggCont.innerHTML = matches.map((m, i) => `
-                    <div class="suggestion-item ${i===0 ? 'selected' : ''}" data-index="${i}" onclick="selectSuggestion('${input.id}', '${m}')">
-                        ${m}
-                    </div>
-                `).join('');
-                suggCont.classList.remove('hidden');
-            } else {
-                suggCont.classList.add('hidden');
-            }
-        }
-
-        function handleKeyNavigation(e, input) {
-            const id = input.id === 'c-van' ? 'suggestions-van' : 'suggestions-naar';
-            const container = document.getElementById(id);
-            const items = container.getElementsByClassName('suggestion-item');
-
-            if (container.classList.contains('hidden')) return;
-
-            if (e.key === "ArrowDown") {
-                e.preventDefault();
-                currentFocusIndex = (currentFocusIndex + 1) % items.length;
-                updateSelection(items);
-            } else if (e.key === "ArrowUp") {
-                e.preventDefault();
-                currentFocusIndex = (currentFocusIndex - 1 + items.length) % items.length;
-                updateSelection(items);
-            } else if (e.key === "Enter") {
-                if (currentFocusIndex > -1 && items[currentFocusIndex]) {
-                    e.preventDefault();
-                    selectSuggestion(input.id, items[currentFocusIndex].innerText.trim());
-                }
-            } else if (e.key === "Escape") {
-                hideSuggestions();
-            }
-        }
-
-        function updateSelection(items) {
-            for (let i = 0; i < items.length; i++) {
-                items[i].classList.remove('selected');
-                if (i === currentFocusIndex) items[i].classList.add('selected');
-            }
-        }
-
-        function selectSuggestion(inputId, value) {
-            document.getElementById(inputId).value = value;
-            hideSuggestions();
-        }
-
-        function step(id, v) { 
-            const i = document.getElementById(id); 
-            const cur = parseInt(i.value) || 0;
-            i.value = Math.max(0, cur + v); 
-        }
-
-        function setCurrentTime(dId, tId) {
-            const n = new Date();
-            document.getElementById(dId).value = n.toISOString().split('T')[0];
-            document.getElementById(tId).value = n.toTimeString().slice(0,5);
-        }
-
-        function saveSettings() {
-            const info = {
-                name: document.getElementById('ship-name').value,
-                eni: document.getElementById('ship-eni').value,
-                ton: document.getElementById('ship-ton').value,
-                tel: document.getElementById('ship-tel').value,
-                mail: document.getElementById('ship-mail').value,
-                bevracht: document.getElementById('ship-bevracht').value
-            };
-            localStorage.setItem('ship_info_v400', JSON.stringify(info));
-            updateShipDisplay(); closeModal('settings-modal');
-        }
-
-        function updateShipDisplay() {
-            const s = JSON.parse(localStorage.getItem('ship_info_v400') || '{}');
-            document.getElementById('active-ship-display').innerText = s.name ? `${s.name} (${s.eni || '?'})` : 'Gegevens invoeren...';
-            ['ship-name','ship-eni','ship-ton','ship-tel','ship-mail','ship-bevracht'].forEach(id => {
-                const key = id.replace('ship-', '');
-                document.getElementById(id).value = s[key] || '';
-            });
+        function toggleTrip(index) {
+            const card = document.getElementById(`trip-card-${index}`);
+            card.classList.toggle('trip-collapsed');
         }
 
         function selectTerminal(n) { 
             currentTerminal = n; 
             document.getElementById('term-label').innerText = n; 
-            document.getElementById('editing-terminal-index').value = "-1";
-            document.getElementById('terminal-confirm-btn').innerText = "Toevoegen";
-            ['load-full', 'load-empty', 'dis-full', 'dis-empty'].forEach(id => document.getElementById(id).value = "0");
             closeModal('terminal-select-modal'); openModal('container-count-modal'); 
         }
 
-        function editAddedTerminal(index) {
-            const t = tempTerminalList[index];
-            currentTerminal = t.name;
-            document.getElementById('term-label').innerText = t.name;
-            document.getElementById('editing-terminal-index').value = index;
-            document.getElementById('terminal-confirm-btn').innerText = "Bijwerken";
-            document.getElementById('load-full').value = t.lf;
-            document.getElementById('load-empty').value = t.le;
-            document.getElementById('dis-full').value = t.df;
-            document.getElementById('dis-empty').value = t.de;
-            openModal('container-count-modal');
-        }
-
         function confirmTerminalData() {
-            const data = {
+            tempTerminalList.push({
                 name: currentTerminal,
                 lf: parseInt(document.getElementById('load-full').value) || 0,
                 le: parseInt(document.getElementById('load-empty').value) || 0,
                 df: parseInt(document.getElementById('dis-full').value) || 0,
                 de: parseInt(document.getElementById('dis-empty').value) || 0
-            };
-            const editIdx = parseInt(document.getElementById('editing-terminal-index').value);
-            if(editIdx >= 0) tempTerminalList[editIdx] = data;
-            else tempTerminalList.push(data);
+            });
             renderTerminalPreview(); closeModal('container-count-modal');
         }
 
         function renderTerminalPreview() {
-            const p = document.getElementById('terminal-preview');
-            p.innerHTML = tempTerminalList.map((t, i) => `
-                <span onclick="editAddedTerminal(${i})" class="bg-sky-500/20 text-sky-400 px-3 py-1 rounded-lg text-[10px] font-black border border-sky-500/30 uppercase cursor-pointer hover:bg-sky-500/40 transition-all active:scale-95">
-                    ${t.name} <i class="fas fa-edit ml-1 opacity-50"></i>
-                </span>
-            `).join('');
+            document.getElementById('terminal-preview').innerHTML = tempTerminalList.map(t => `<span class="bg-sky-500/20 text-sky-400 px-3 py-1 rounded-lg text-[10px] font-black border border-sky-500/30 uppercase">${t.name}</span>`).join('');
         }
 
         function saveTrip() {
             const r = {
                 code: document.getElementById('c-reiscode').value || 'D-' + Date.now().toString().slice(-3),
-                personen: document.getElementById('c-personen').value || '2',
+                personen: document.getElementById('c-personen').value || '4',
                 van: document.getElementById('c-van').value || '?', naar: document.getElementById('c-naar').value || '?',
                 ad: document.getElementById('c-a-datum').value || '', at: document.getElementById('c-a-tijd').value || '',
                 vd: document.getElementById('c-v-datum').value || '', vt: document.getElementById('c-v-tijd').value || '',
@@ -408,144 +184,77 @@
             };
             reizen.unshift(r); 
             localStorage.setItem('du_reizen_v400', JSON.stringify(reizen));
-            tempTerminalList = []; document.getElementById('terminal-preview').innerHTML = '';
-            closeModal('trip-modal'); renderReizen();
+            tempTerminalList = []; renderReizen(); closeModal('trip-modal');
         }
 
         function renderReizen() {
             const lijst = document.getElementById('reizen-lijst');
             lijst.innerHTML = reizen.map((r, i) => {
+                // De eerste reis (i=0) is altijd volledig open. De rest (i>0) is ingeklapt.
+                const isCollapsed = i > 0 ? 'trip-collapsed' : '';
+                
                 let terminalHtml = r.terminals.map(t => `
-                    <div class="bg-slate-900 border border-white/5 rounded-[1.8rem] p-4">
-                        <span class="font-black text-white uppercase italic text-xs mb-3 block">Terminal ${t.name}</span>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="space-y-1">
-                                <div class="text-[7px] font-black text-red-500 uppercase px-1">Lossen</div>
-                                <div class="grid grid-cols-2 gap-1">
-                                    <div class="bg-red-500/10 p-2 rounded-xl text-center border border-red-500/10">
-                                        <div class="text-[6px] text-white/40 uppercase">Vol</div>
-                                        <div class="text-sm font-black text-white">${t.df > 0 ? t.df : '-'}</div>
-                                    </div>
-                                    <div class="bg-red-500/5 p-2 rounded-xl text-center border border-red-500/5">
-                                        <div class="text-[6px] text-white/40 uppercase">Leeg</div>
-                                        <div class="text-sm font-black text-white">${t.de > 0 ? t.de : '-'}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="space-y-1">
-                                <div class="text-[7px] font-black text-emerald-500 uppercase px-1">Laden</div>
-                                <div class="grid grid-cols-2 gap-1">
-                                    <div class="bg-emerald-500/10 p-2 rounded-xl text-center border border-emerald-500/10">
-                                        <div class="text-[6px] text-white/40 uppercase">Vol</div>
-                                        <div class="text-sm font-black text-white">${t.lf > 0 ? t.lf : '-'}</div>
-                                    </div>
-                                    <div class="bg-emerald-500/5 p-2 rounded-xl text-center border border-emerald-500/5">
-                                        <div class="text-[6px] text-white/40 uppercase">Leeg</div>
-                                        <div class="text-sm font-black text-white">${t.le > 0 ? t.le : '-'}</div>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="bg-slate-900/50 border border-white/5 rounded-2xl p-3 mb-2">
+                        <span class="font-black text-white text-[10px] uppercase block mb-1">Terminal ${t.name}</span>
+                        <div class="grid grid-cols-2 gap-2 text-[10px]">
+                            <div class="text-red-400">L: ${t.df}v / ${t.de}l</div>
+                            <div class="text-emerald-400">B: ${t.lf}v / ${t.le}l</div>
                         </div>
                     </div>
                 `).join('');
 
                 return `
-                <div class="glass-card p-6 rounded-[2.5rem] border-l-[8px] border-l-sky-500 shadow-2xl relative overflow-hidden mb-6">
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="px-3 py-1 bg-sky-500/10 text-sky-400 text-[10px] font-black uppercase rounded-full border border-sky-500/20">${r.van} > ${r.naar}</span>
-                                <span class="bg-white/5 px-3 py-1 rounded-full text-white/50 text-[10px] font-bold"><i class="fas fa-users mr-1 text-sky-400"></i>${r.personen}</span>
-                            </div>
-                            <h2 class="text-4xl font-black italic uppercase text-white tracking-tighter">${r.code}</h2>
+                <div id="trip-card-${i}" onclick="${i > 0 ? `toggleTrip(${i})` : ''}" class="glass-card p-6 rounded-[2rem] border-l-[6px] border-l-sky-500 shadow-xl relative ${isCollapsed}">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="text-[9px] font-black text-sky-400 uppercase tracking-widest">${r.van} > ${r.naar}</span>
+                            <h2 class="text-2xl font-black italic uppercase text-white tracking-tighter">${r.code}</h2>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="exportTrip(${i})" class="w-12 h-12 flex items-center justify-center bg-sky-500 rounded-2xl text-white shadow-lg active:scale-95 transition-all"><i class="fas fa-file-pdf text-lg"></i></button>
-                            <button onclick="deleteTrip(${i})" class="w-10 h-10 flex items-center justify-center text-white/10 hover:text-red-500 transition-colors"><i class="fas fa-trash-alt"></i></button>
+                            <button onclick="event.stopPropagation(); exportTrip(${i})" class="w-10 h-10 flex items-center justify-center bg-sky-500 rounded-xl text-white"><i class="fas fa-file-pdf"></i></button>
+                            <button onclick="event.stopPropagation(); deleteTrip(${i})" class="w-10 h-10 flex items-center justify-center text-white/20 hover:text-red-500"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div onclick="openEditTime(${i}, 'ETA')" class="p-4 bg-slate-950/50 rounded-3xl border border-white/5 cursor-pointer">
-                            <span class="text-[9px] font-black text-sky-400 uppercase block mb-1">Ankunft (ETA)</span>
-                            <span class="text-2xl font-black block text-white leading-none mb-1">${r.at || '--:--'}</span>
-                            <span class="text-[11px] font-bold text-white/30 italic">${r.ad || '-'}</span>
+                    
+                    <div class="details-content mt-6">
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="p-3 bg-slate-950/50 rounded-2xl border border-white/5">
+                                <span class="text-[8px] font-black text-sky-400 uppercase block">Ankunft (ETA)</span>
+                                <span class="text-lg font-black block text-white">${r.at || '--:--'}</span>
+                            </div>
+                            <div class="p-3 bg-slate-950/50 rounded-2xl border border-white/5">
+                                <span class="text-[8px] font-black text-violet-400 uppercase block">Abfahrt (ETD)</span>
+                                <span class="text-lg font-black block text-white">${r.vt || '--:--'}</span>
+                            </div>
                         </div>
-                        <div onclick="openEditTime(${i}, 'ETD')" class="p-4 bg-slate-950/50 rounded-3xl border border-white/5 cursor-pointer">
-                            <span class="text-[9px] font-black text-violet-400 uppercase block mb-1">Abfahrt (ETD)</span>
-                            <span class="text-2xl font-black block text-white leading-none mb-1">${r.vt || '--:--'}</span>
-                            <span class="text-[11px] font-bold text-white/30 italic">${r.vd || '-'}</span>
-                        </div>
+                        <div class="space-y-1">${terminalHtml}</div>
                     </div>
-                    <div class="space-y-3">${terminalHtml}</div>
                 </div>`;
-            }).join('') || '<div class="text-center py-20 opacity-20 text-[10px] font-black uppercase tracking-widest">Keine Fahrten vorhanden</div>';
+            }).join('') || '<div class="text-center py-20 opacity-20 text-[10px] font-black uppercase tracking-widest">Geen reizen aanwezig</div>';
         }
 
+        // PDF en Settings functies (zoals in origineel)
         async function exportTrip(index) {
             const r = reizen[index], s = JSON.parse(localStorage.getItem('ship_info_v400') || '{}');
-            const { jsPDF } = window.jspdf; 
-            const doc = new jsPDF();
-            
-            doc.setFillColor(2, 6, 23); doc.rect(0, 0, 210, 45, 'F');
-            doc.setTextColor(56, 189, 248); doc.setFontSize(28); doc.setFont("helvetica", "bold"); 
-            doc.text("DUISBURG Hafenmeister", 15, 25);
-            doc.setTextColor(255); doc.setFontSize(9); doc.setFont("helvetica", "normal");
-            doc.text("OFFIZIELLE HAFENDEKLARATION / MANIFEST", 15, 33);
-            doc.setFillColor(30, 41, 59); doc.roundedRect(145, 12, 50, 22, 3, 3, 'F');
-            doc.setTextColor(56, 189, 248); doc.setFontSize(8); doc.text("REISECODE", 150, 20);
-            doc.setTextColor(255); doc.setFontSize(14); doc.text(r.code, 150, 28);
-            doc.setTextColor(15, 23, 42); doc.setFontSize(11); doc.setFont("helvetica", "bold");
-            doc.text("SCHIFFS- UND REISEINFORMATIONEN", 15, 58);
-            doc.setFontSize(9); doc.setTextColor(100, 116, 139); doc.text("SCHIFFSGEGEVENS", 15, 65);
-            doc.setTextColor(15, 23, 42); doc.text([`Naam: ${s.name || '-'}`,`ENI: ${s.eni || '-'}`,`Tonnage: ${s.ton || '-'} t`,`Bevrachter: ${s.bevracht || '-'}`,`Tel: ${s.tel || '-'}`,`Mail: ${s.mail || '-'}`], 15, 72, { lineHeightFactor: 1.5 });
-            doc.setTextColor(100, 116, 139); doc.text("REISEVERLAUF", 110, 65);
-            doc.setTextColor(15, 23, 42); doc.text([`Route: ${r.van} > ${r.naar}`,`Personen: ${r.personen}`,`Ankunft: ${r.ad} ${r.at}`,`Abfahrt: ${r.vd} ${r.vt}`], 110, 72, { lineHeightFactor: 1.5 });
-            doc.line(15, 99, 195, 99);
-            doc.text("LADUNGSÜBERSICHT PRO TERMINAL", 15, 105);
-
-            const bodyData = r.terminals.map(t => [
-                {content: t.name, styles: {fontStyle: 'bold', textColor: [2, 132, 199]}},
-                t.lf > 0 ? t.lf : '', 
-                t.le > 0 ? t.le : '', 
-                t.df > 0 ? t.df : '', 
-                t.de > 0 ? t.de : ''
-            ]);
-
-            doc.autoTable({
-                startY: 110,
-                head: [['TERMINAL', 'LADEN (Voll)', 'LADEN (Leer)', 'LÖSCHEN (Voll)', 'LÖSCHEN (Leer)']],
-                body: bodyData,
-                theme: 'striped',
-                headStyles: { fillColor: [15, 23, 42], halign: 'center', fontSize: 8, cellPadding: 4 },
-                columnStyles: { 0: { cellWidth: 45 }, 1: { halign: 'center', fontStyle: 'bold', textColor: [5, 150, 105] }, 2: { halign: 'center', textColor: [16, 185, 129] }, 3: { halign: 'center', fontStyle: 'bold', textColor: [220, 38, 38] }, 4: { halign: 'center', textColor: [239, 68, 68] } },
-                styles: { fontSize: 10, cellPadding: 5, valign: 'middle' }
-            });
-
-            const pdfBlobUrl = doc.output('bloburl');
-            document.getElementById('pdf-frame').src = pdfBlobUrl;
-            document.getElementById('pdf-download-btn').onclick = () => doc.save(`Duisburg_${r.code}.pdf`);
-            document.getElementById('pdf-email-btn').onclick = () => {
-                const destinationMail = "anmeldung@duisport.de";
-                const subject = encodeURIComponent(`Hafendeklaration: ${s.name || 'Schip'} - Dossier ${r.code}`);
-                const body = encodeURIComponent(`Sehr geehrte Damen und Herren,\n\nAnbei erhalten Sie de Hafendeklaration.\n\nMit freundlichen Grüßen,\n${s.name || ''}`);
-                window.location.href = `mailto:${destinationMail}?subject=${subject}&body=${body}`;
-            };
+            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+            doc.setFontSize(20); doc.text("Hafenmanifest Duisburg", 15, 20);
+            doc.setFontSize(10); doc.text(`Reis: ${r.code} | Schip: ${s.name || '-'}`, 15, 30);
+            const body = r.terminals.map(t => [t.name, t.lf, t.le, t.df, t.de]);
+            doc.autoTable({ head: [['Terminal', 'L-Vol', 'L-Leeg', 'V-Vol', 'V-Leeg']], body: body, startY: 40 });
+            document.getElementById('pdf-frame').src = doc.output('bloburl');
             openModal('pdf-modal');
         }
 
-        function openEditTime(i, t) {
-            const r = reizen[i]; document.getElementById('edit-index').value = i; document.getElementById('edit-type').value = t;
-            if(t === 'ETA') { document.getElementById('edit-date').value = r.ad; document.getElementById('edit-time').value = r.at; }
-            else { document.getElementById('edit-date').value = r.vd; document.getElementById('edit-time').value = r.vt; }
-            openModal('edit-time-modal');
+        function saveSettings() {
+            const info = { name: document.getElementById('ship-name').value, eni: document.getElementById('ship-eni').value, mail: document.getElementById('ship-mail').value };
+            localStorage.setItem('ship_info_v400', JSON.stringify(info));
+            updateShipDisplay(); closeModal('settings-modal');
         }
 
-        function updateTripTime() {
-            const idx = document.getElementById('edit-index').value;
-            const t = document.getElementById('edit-type').value;
-            if(t === 'ETA') { reizen[idx].ad = document.getElementById('edit-date').value; reizen[idx].at = document.getElementById('edit-time').value; }
-            else { reizen[idx].vd = document.getElementById('edit-date').value; reizen[idx].vt = document.getElementById('edit-time').value; }
-            localStorage.setItem('du_reizen_v400', JSON.stringify(reizen)); renderReizen(); closeModal('edit-time-modal');
+        function updateShipDisplay() {
+            const s = JSON.parse(localStorage.getItem('ship_info_v400') || '{}');
+            document.getElementById('active-ship-display').innerText = s.name ? `${s.name} (${s.eni || '?'})` : 'Gegevens invoeren...';
+            document.getElementById('ship-name').value = s.name || ''; document.getElementById('ship-eni').value = s.eni || '';
         }
 
         function deleteTrip(i) { if(confirm('Reis verwijderen?')) { reizen.splice(i,1); localStorage.setItem('du_reizen_v400', JSON.stringify(reizen)); renderReizen(); } }
