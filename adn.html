@@ -10,348 +10,198 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="logo.png"> 
     
-    <style>
-        /* ======================================================= */
-        /* BASIS CONFIGURATIE (STANDAARD: NACHTMODUS) */
-        /* ======================================================= */
+   <style>
+        /* CSS VARIABELEN VAN DASHBOARD */
         :root {
-            --bg-dark: #0a111f; /* Zeer diep donkerblauw */
-            --card-base: #1c2638; /* Diepblauw-grijs metaal */
-            --accent-blue: #3b82f6; /* New Mexico Blauw */
-            --accent-teal: #14b8a6; /* New Mexico Turquoise (ADN accent) */
-            --panel-bg: #151f30; /* Iets lichtere achtergrond voor panelen */
-            --text-color-primary: #e2e8f0;
-            --text-color-secondary: #a0aec0;
-            --border-color-dark: #374151;
-            --shadow-color-dark: rgba(0, 0, 0, 0.4);
-            --input-bg: #e2e8f0; /* Lichte achtergrond voor input */
-            --input-text: #111827; /* Donkere tekst in input */
-            
-            --text-on-accent: #111827; 
-            --text-on-accent-light: #ffffff; 
-            --border-color-light: #e5e7eb; /* Light mode border */
-            --shadow-color-light: rgba(0, 0, 0, 0.1); /* Light mode shadow */
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark); 
-            padding-top: 80px; 
-            color: var(--text-color-primary); 
-            transition: background-color 0.3s, color 0.3s; 
+            --primary-blue: #1e40af;
+            --glow-blue: #3b82f6;
+            --dark-bg: #020617;
+            --glass: rgba(15, 23, 42, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-teal: #14b8a6;
         }
 
-        /* Navigatiebalk */
-        .navbar {
-            height: 80px; 
-            box-shadow: 0 4px 15px -5px var(--shadow-color-dark);
-            z-index: 1000;
-            background-color: #111827; 
-            border-bottom: 3px solid var(--accent-blue);
-            transition: background-color 0.3s, border-color 0.3s;
-        }
-        .navbar-title {
-            font-weight: 800;
-            color: var(--accent-blue);
-            text-shadow: 0 0 5px rgba(59, 130, 246, 0.5); 
-            transition: color 0.3s, text-shadow 0.3s;
-        }
-        
-        /* PANEEL STYLING (Tool-Panel) */
-        .tool-panel {
-            background-color: var(--panel-bg);
-            border-radius: 0.5rem;
-            padding: 3rem; /* Meer padding voor centrale kaart */
-            box-shadow: 0 5px 25px rgba(59, 130, 246, 0.25); /* Sterkere gloed */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-bg);
+            color: white;
+            margin: 0;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid var(--border-color-dark); 
-            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+            align-items: center;
+            overflow-x: hidden;
+            padding-top: 100px;
         }
-        
-        /* VERTICALE ACCENT LIJN (Aangepast voor ADN-kleur) */
-        .tool-panel::before {
-            content: '';
-            position: absolute;
+
+        /* ACHTERGROND STIJL */
+        .bg-fixed {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('pic/Afbeelding van WhatsApp op 2025-11-06 om 12.27.07_d3198d5b.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+            filter: brightness(0.15) contrast(0.95) saturate(0.8);
+        }
+
+        /* NAVBAR STIJL */
+        .navbar {
+            height: 80px;
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+            position: fixed;
+            width: 100%;
             top: 0;
-            left: 0;
-            width: 6px; 
-            height: 100%;
-            background-color: var(--accent-teal); /* Gebruik ADN/Teal accent */
-            box-shadow: 1px 0 10px rgba(20, 184, 166, 0.6);
-            transition: background-color 0.3s, box-shadow 0.3s;
+            z-index: 1000;
+        }
+
+        .navbar-title {
+            font-weight: 900;
+            font-size: 1.6rem;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #fff, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 auto;
+        }
+
+        /* ADN PANEEL STYLING */
+        .tool-panel {
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 2.5rem;
+            padding: 2.5rem;
+            box-shadow: 0 0 40px rgba(0,0,0,0.6), inset 0 0 20px rgba(59, 130, 246, 0.05);
+            width: 100%;
+            max-width: 800px;
+            position: relative;
         }
 
         .panel-title {
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: 900;
             margin-bottom: 1.5rem;
             text-transform: uppercase;
-            letter-spacing: 0.15em; 
-            color: var(--accent-teal); /* Gebruik ADN/Teal accent */
-            border-bottom: 2px solid var(--accent-teal);
-            padding-bottom: 0.5rem;
-            display: block;
-            transition: color 0.3s, border-color 0.3s;
-        }
-        
-        /* Input Styling */
-        .default-input {
-            background-color: var(--input-bg);
-            color: var(--input-text);
-            border: 1px solid var(--border-color-dark);
-            transition: border-color 0.3s;
-        }
-        
-        .default-input:focus {
-            border-color: var(--accent-blue);
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
-        }
-
-        /* Spinner & Knoppen */
-        .spinner {
-            border-top-color: var(--accent-blue);
-            border-left-color: var(--accent-blue);
-        }
-        .btn-elegant-gradient {
-            background-image: linear-gradient(to right, var(--accent-blue) 0%, var(--accent-teal) 100%);
-            color: var(--text-on-accent);
-        }
-        .btn-elegant-gradient:hover {
-            box-shadow: 0 4px 15px var(--shadow-color-dark);
-        }
-        
-/* FILE INPUT STYLING */
-        #file-label {
-            /* ... bestaande stijlen ... */
-            transition: all 0.2s;
-        }
-        #file-label:hover {
-            /* ... bestaande stijlen ... */
-            border-color: var(--accent-teal);
-            color: var(--accent-teal);
-        }
-        
-        /* NIEUWE STIJL VOOR DRAG-AND-DROP */
-        #file-label[style*="border-color: var(--accent-blue)"] {
-            /* Visuele feedback als het bestand boven het vak hangt */
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); 
-            border: 2px dashed var(--accent-blue) !important;
-            color: var(--accent-blue) !important;
-        }
-        /* Einde NIEUWE STIJL */
-
-        #file-name {
-            /* ... bestaande stijlen ... */
-        }
-
-        /* RESULT DIV STYLING */
-        .result-panel-box {
-            background-color: var(--card-base);
-            border: 1px solid var(--border-color-dark);
-        }
-        .result-panel-box-inner {
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color-dark);
-        }
-        .text-blue-600 { /* Container number */
-            color: var(--accent-blue);
-        }
-        .text-teal-700 { /* Locatie titel */
-            color: var(--accent-teal);
-        }
-        .bg-teal-100 { /* UN badge background */
-            background-color: rgba(20, 184, 166, 0.2); 
-            color: var(--accent-teal);
-        }
-        
-        /* ======================================================= */
-        /* MENU KNOP & PANEEL STYLING */
-        /* ======================================================= */
-        .menu-grid-button {
-            display: grid;
-            grid-template-columns: repeat(2, 10px);
-            grid-template-rows: repeat(2, 10px);
-            gap: 4px;
-            padding: 10px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            transition: transform 0.2s;
-            position: relative; 
-            z-index: 1010; 
-        }
-        .menu-grid-button:hover {
-            transform: scale(1.05);
-        }
-        .menu-grid-dot {
-            background-color: var(--accent-blue);
-            border-radius: 2px;
-            box-shadow: 0 0 3px rgba(59, 130, 246, 0.5);
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
-        
-        #menu-panel {
-            position: fixed;
-            top: 83px; 
-            right: 20px; 
-            background-color: var(--panel-bg);
-            border: 1px solid var(--accent-blue);
-            border-radius: 0.5rem;
-            box-shadow: 0 5px 15px var(--shadow-color-dark);
-            width: 280px; 
-            z-index: 1000;
-            padding: 10px; 
-            
-            opacity: 0;
-            transform: translateX(20px);
-            visibility: hidden;
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out, visibility 0.3s, background-color 0.3s;
-        }
-
-        #menu-panel.active {
-            opacity: 1;
-            transform: translateX(0);
-            visibility: visible;
-        }
-
-        #menu-links-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 10px; 
-        }
-
-        .menu-link {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100px; 
-            text-align: center;
-            border-radius: 0.5rem; 
-            
-            background-color: var(--border-color-dark); 
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-color-primary);
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s, background-color 0.3s, color 0.3s;
-            line-height: 1.2;
-        }
-
-        .menu-link:hover {
-            background-color: var(--accent-blue);
+            letter-spacing: 0.2em;
             color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 3px 5px rgba(59, 130, 246, 0.3);
-        }
-        .menu-icon {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-        }
-        
-        /* Modus schakelaar neemt volledige breedte in (grid-column: span 2) */
-        #mode-toggle-link {
-             background-color: #374151; 
-             grid-column: span 2; 
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 1rem;
         }
 
-        /* ======================================================= */
-        /* MODAL STYLING (Aangepast voor Dark Mode) */
-        /* ======================================================= */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000; /* Zorg ervoor dat het boven alles zit */
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.7); /* Donkerdere overlay */
-            justify-content: center;
-            align-items: center;
+        /* INPUTS & BUTTONS */
+        .default-input {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 1rem !important;
+            padding: 0.75rem 1rem;
+            color: white !important;
+            transition: 0.3s;
         }
+
+        .default-input:focus {
+            border-color: var(--glow-blue) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            outline: none;
+        }
+
+        .btn-elegant-gradient {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #1e3a8a 100%);
+            color: white;
+            border-radius: 1.5rem;
+            padding: 1rem 2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-elegant-gradient:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(30, 64, 175, 0.4);
+            border-color: var(--glow-blue);
+        }
+
+        #file-label {
+            background: rgba(255,255,255,0.03);
+            border: 2px dashed var(--glass-border);
+            border-radius: 1.5rem;
+            transition: 0.3s;
+        }
+
+        #file-label:hover {
+            border-color: var(--glow-blue);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        /* RESULTATEN */
+        .result-panel-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+
+.result-panel-box-inner ul li {
+    background-color: #1e40af !important; /* Donkerblauw voor goed contrast */
+    color: white !important;              /* Witte tekst */
+padding: 2px 10px;   /* Smallere padding voor minder hoogte */
+    border-radius: 9999px;
+    font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+        /* MODAL STYLING */
         .modal-content {
-            background-color: var(--panel-bg);
-            color: var(--text-color-primary);
-            padding: 24px;
-            border-radius: 12px;
-            max-width: 450px;
-            width: 90%;
-            box-shadow: 0 4px 15px var(--shadow-color-dark);
-            border: 1px solid var(--border-color-dark);
-        }
-        .modal-content h2, .modal-content h3 {
-            color: var(--text-color-primary);
-        }
-        .modal-content label {
-            color: var(--text-color-secondary);
-        }
-        .close-button {
-            color: var(--text-color-secondary);
-            font-size: 28px;
-            font-weight: bold;
-            transition: color 0.2s;
-        }
-        .close-button:hover,
-        .close-button:focus {
-            color: var(--accent-blue);
-            cursor: pointer;
-        }
-        
-        /* ======================================================= */
-        /* DAGMODUS OVERRIDES (LIGHT MODE) */
-        /* ======================================================= */
-        body.light-mode {
-            --bg-dark: #f3f4f6; 
-            --card-base: #ffffff; 
-            --accent-blue: #1e3a8a; 
-            --accent-teal: #047857; 
-            --panel-bg: #ffffff;
-            --text-color-primary: #1f2937;
-            --text-color-secondary: #4b5563;
-            --input-bg: #f9fafb;
-            --input-text: #1f2937;
-            
-            background-color: var(--bg-dark);
-            color: var(--text-color-primary);
-        }
+background: #0f172a; /* Donkere achtergrond voor contrast */
+    border: 2px solid var(--glow-blue);
+    border-radius: 2rem;
+    padding: 3rem;
+    width: 100%;
+    max-width: 500px; /* Was veel kleiner, nu 1000px */
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+/* VOEG DIT TOE AAN JE CSS */
+.modal {
+    display: none; 
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85); 
+    backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
 
-        body.light-mode .navbar {
-            background-color: var(--panel-bg);
-            box-shadow: 0 4px 15px -5px var(--shadow-color-light);
-            border-bottom-color: var(--accent-blue);
-        }
-        
-        /* Panelen */
-        body.light-mode .tool-panel {
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color-light);
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
-        }
-        body.light-mode .modal-content {
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color-light);
-            box-shadow: 0 4px 15px var(--shadow-color-light);
-        }
-        body.light-mode .modal-content h2, body.light-mode .modal-content h3 {
-             color: var(--input-text);
-        }
+.close-button {
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #94a3b8;
+}
 
-        /* Knoppen/Accenten */
-        body.light-mode .btn-elegant-gradient:hover {
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-        }
-        body.light-mode .result-panel-box-inner {
-            background-color: #f7f7f7;
-        }
-        body.light-mode .bg-teal-100 { /* UN badge background */
-            background-color: #d1fae5; 
-        }
+.close-button:hover {
+    color: white;
+}
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
     </style>
 </head>
 <body class="flex flex-col items-center min-h-screen relative">
@@ -361,39 +211,8 @@
             ADN DOCUMENT
         </div>
 
-        <button id="menu-toggle" class="menu-grid-button" aria-label="Open Hoofdmenu" aria-controls="menu-panel">
-            <div class="menu-grid-dot"></div>
-            <div class="menu-grid-dot"></div>
-            <div class="menu-grid-dot"></div>
-            <div class="menu-grid-dot"></div>
-        </button>
     </header>
-    
-    <nav id="menu-panel" role="navigation" aria-label="Hoofdnavigatie">
-        <div id="menu-links-grid">
-            <a href="index.html" class="menu-link">
-                <span class="menu-icon" role="img" aria-label="Home">🏠</span>
-                <span>Dashboard</span>
-            </a>
-            <a href="waterstanden.html" class="menu-link">
-                <span class="menu-icon" role="img" aria-label="Brug">🌉</span>
-                <span>Brughoogte</span>
-            </a>
-            <a href="reizen.html" class="menu-link">
-                <span class="menu-icon" role="img" aria-label="Kompas">🧭</span>
-                <span>Reizen</span>
-            </a>
-            <a href="adn.html" class="menu-link" style="background-color: var(--accent-teal); color: var(--text-on-accent);">
-                <span class="menu-icon" role="img" aria-label="Vlam">🔥</span>
-                <span>ADN Document</span>
-            </a>
-            
-            <a href="#" id="mode-toggle-link" class="menu-link" role="button">
-                <span class="menu-icon" role="img" aria-label="Modus schakelen">🌓</span>
-                <span>Modus Schakelen</span>
-            </a>
-        </div>
-    </nav>
+
     
     <div id="terminalSelectionModal" class="modal">
         <div class="modal-content">
@@ -474,75 +293,47 @@
     </div>
 
 <script>
-    const menuToggle = document.getElementById('menu-toggle');
-    const menuPanel = document.getElementById('menu-panel');
-    const modeToggleLink = document.getElementById('mode-toggle-link');
-    const body = document.body;
-    
-    // ====================================================================
-    // MENU & MODUS LOGICA (Behoud)
-    // ====================================================================
+document.addEventListener('DOMContentLoaded', function () {
 
-    function updateAriaAttributes(isExpanded) {
-        menuToggle.setAttribute('aria-expanded', isExpanded);
-        menuPanel.setAttribute('aria-hidden', !isExpanded);
-    }
+    const body = document.body;
+    const modeToggleLink = document.getElementById('mode-toggle-link');
 
     function switchMode(isLightMode) {
+        if (!modeToggleLink) return;
+
         const iconSpan = modeToggleLink.querySelector('span:first-child');
         const textSpan = modeToggleLink.querySelector('span:last-child');
 
         if (isLightMode) {
             body.classList.add('light-mode');
-            iconSpan.textContent = '🌙';
-            textSpan.textContent = 'Nacht Modus';
-            modeToggleLink.setAttribute('aria-label', 'Schakel naar nachtmodus');
+            if (iconSpan) iconSpan.textContent = '🌙';
+            if (textSpan) textSpan.textContent = 'Nacht Modus';
             localStorage.setItem('theme', 'light');
         } else {
             body.classList.remove('light-mode');
-            iconSpan.textContent = '☀️';
-            textSpan.textContent = 'Dag Modus';
-            modeToggleLink.setAttribute('aria-label', 'Schakel naar dagmodus');
+            if (iconSpan) iconSpan.textContent = '☀️';
+            if (textSpan) textSpan.textContent = 'Dag Modus';
             localStorage.setItem('theme', 'dark');
         }
-        
-        // Zorg ervoor dat de actieve link (ADN Document) de accentkleur behoudt
-        const adnLink = document.querySelector('a[href="adn.html"]');
-        if (adnLink) {
-            adnLink.style.backgroundColor = 'var(--accent-teal)';
-            adnLink.style.color = 'var(--text-on-accent)';
-        }
     }
 
-    // 1. INITIALISATIE
-    updateAriaAttributes(false);
+    // opgeslagen thema toepassen
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light') {
-        switchMode(true);
-    } else {
-        switchMode(false);
+    switchMode(savedTheme === 'light');
+
+    // klik op dag/nacht knop
+    if (modeToggleLink) {
+        modeToggleLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            switchMode(!body.classList.contains('light-mode'));
+        });
     }
 
-    // 2. EVENTS
-    menuToggle.addEventListener('click', function(event) {
-        event.stopPropagation(); 
-        const isActive = menuPanel.classList.toggle('active');
-        updateAriaAttributes(isActive);
-    });
+});
 
-    document.addEventListener('click', function(event) {
-        const isActive = menuPanel.classList.contains('active');
-        if (isActive && !menuPanel.contains(event.target) && !menuToggle.contains(event.target)) {
-            menuPanel.classList.remove('active');
-            updateAriaAttributes(false);
-        }
-    });
 
-    modeToggleLink.addEventListener('click', function(event) {
-        event.preventDefault(); 
-        const isLightMode = body.classList.contains('light-mode');
-        switchMode(!isLightMode); 
-    });
+
+
 
 
     // ====================================================================
