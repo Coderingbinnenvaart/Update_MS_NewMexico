@@ -1,402 +1,156 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <link rel="icon" type="image/png" href="logo.png"> 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hafenmeister Briefje</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Havenbriefje Duisburg</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
     <style>
-        :root { --bg: #020617; --accent: #38bdf8; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: #f8fafc; padding-top: 85px; }
-        .main-container { max-width: 520px; margin: 0 auto; padding: 0 1rem; }
-        .glass-card { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(56, 189, 248, 0.15); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .btn-gradient { background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%); }
-        .modal-overlay { background: rgba(2, 6, 23, 0.98); display: none; z-index: 2000; position: fixed; inset: 0; align-items: center; justify-content: center; }
-        .modal-overlay.active { display: flex; }
-        input { font-size: 1.1rem !important; color-scheme: dark; }
-        .btn-now { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; }
-        #pdf-frame { width: 100%; height: 75vh; border-radius: 1.5rem; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); }
-        .counter-btn { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 8px; font-weight: bold; }
-
-        /* Suggestie lijst styling */
-        .autocomplete-suggestions { position: absolute; background: #1e293b; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 0.75rem; max-height: 200px; overflow-y: auto; z-index: 3000; width: 100%; margin-top: 2px; }
-        .suggestion-item { padding: 12px 15px; cursor: pointer; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .suggestion-item.selected { background: #38bdf8; color: #020617; }
-
-        /* Accordion Effect */
-        .trip-collapsed .details-content { display: none; }
-        .trip-collapsed { cursor: pointer; padding-bottom: 1rem !important; }
-        .trip-collapsed:hover { background: rgba(56, 189, 248, 0.03); }
+        body {
+            background:#020617;
+            color:#f8fafc;
+            font-family: system-ui, sans-serif;
+            padding-top:80px;
+        }
+        .glass-card {
+            background: rgba(15,23,42,.9);
+            border:1px solid rgba(56,189,248,.2);
+            backdrop-filter: blur(16px);
+        }
     </style>
 </head>
 <body>
 
-    <header class="fixed top-0 inset-x-0 h-20 flex items-center justify-between px-5 z-[1000] border-b border-white/10 bg-slate-950/95 backdrop-blur-2xl">
-        <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center">
-                <i class="fas fa-ship text-sky-400 text-lg"></i>
-            </div>
-            <div>
-                <h1 class="text-xl font-black tracking-tighter uppercase leading-none">Havenbriefje <span class="text-sky-400">Duisburg</span></h1>
-                <p id="active-ship-display" class="text-[10px] uppercase tracking-wider text-white/50 font-bold italic">Laden...</p>
-            </div>
+<header class="fixed top-0 inset-x-0 h-20 bg-slate-950/95 backdrop-blur border-b border-white/10 flex items-center justify-between px-5 z-50">
+    <h1 class="font-black uppercase tracking-tight">
+        Havenbriefje <span class="text-sky-400">Duisburg</span>
+    </h1>
+    <button onclick="openModal('trip-modal')" class="bg-sky-500 px-4 py-2 rounded-xl font-black text-sm">
+        + Reis
+    </button>
+</header>
+
+<main class="max-w-xl mx-auto px-4 pb-24">
+    <div id="reizen-lijst" class="space-y-4"></div>
+</main>
+
+<!-- MODAL: NIEUWE REIS -->
+<div id="trip-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+    <div class="bg-slate-900 w-full max-w-sm rounded-3xl p-6">
+        <h2 class="font-black text-xl mb-4 text-sky-400 uppercase">Nieuwe reis</h2>
+
+        <input id="c-reiscode" placeholder="Reiscode"
+               class="w-full mb-3 p-3 rounded-xl bg-slate-800 font-black">
+        <input id="c-van" placeholder="Van"
+               class="w-full mb-3 p-3 rounded-xl bg-slate-800 font-black">
+        <input id="c-naar" placeholder="Naar"
+               class="w-full mb-3 p-3 rounded-xl bg-slate-800 font-black">
+
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <input type="date" id="c-a-datum" class="p-3 rounded-xl bg-slate-800">
+            <input type="time" id="c-a-tijd" class="p-3 rounded-xl bg-slate-800">
+            <input type="date" id="c-v-datum" class="p-3 rounded-xl bg-slate-800">
+            <input type="time" id="c-v-tijd" class="p-3 rounded-xl bg-slate-800">
         </div>
-        <div class="flex items-center gap-2">
-            <button onclick="openModal('trip-modal')" class="btn-gradient px-5 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-widest text-white">+ Reis</button>
-            <button onclick="openModal('settings-modal')" class="w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 border border-white/10">
-                <i class="fas fa-cog text-slate-300"></i>
+
+        <div class="flex gap-3">
+            <button onclick="closeModal('trip-modal')" class="flex-1 opacity-40">Terug</button>
+            <button onclick="saveTrip()" class="flex-1 bg-sky-500 rounded-xl py-3 font-black">
+                Opslaan
             </button>
         </div>
-    </header>
-
-    <main class="main-container pb-24">
-        <div id="reizen-lijst" class="space-y-4"></div>
-    </main>
-
-    <div id="pdf-modal" class="modal-overlay p-4">
-        <div class="bg-slate-900 w-full max-w-4xl rounded-[2.5rem] p-5 border border-white/10 shadow-2xl">
-            <div class="flex justify-between items-center mb-5 px-2">
-                <h3 class="font-black text-white text-xl uppercase italic">Haven briefje</h3>
-                <div class="flex gap-2">
-                    <button id="pdf-download-btn" class="bg-sky-500 px-5 py-3 rounded-2xl text-[10px] font-black uppercase text-white">Download</button>
-                    <button id="pdf-email-btn" class="bg-emerald-600 px-5 py-3 rounded-2xl text-[10px] font-black uppercase text-white">Versturen</button>
-                    <button onclick="closeModal('pdf-modal')" class="bg-white/5 px-5 py-3 rounded-2xl text-[10px] font-black uppercase text-white">Sluiten</button>
-                </div>
-            </div>
-            <iframe id="pdf-frame"></iframe>
-        </div>
     </div>
+</div>
 
-    <div id="trip-modal" class="modal-overlay p-4">
-        <div class="bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-6 border border-white/10 shadow-2xl overflow-y-auto max-h-[95vh]">
-            <h2 class="text-xl font-black mb-5 italic uppercase text-sky-400">Nieuwe Reis</h2>
-            <div class="space-y-3 mb-6">
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-slate-950 p-3 rounded-xl border border-white/5">
-                        <label class="text-[9px] font-black text-sky-400 uppercase block mb-1">Reis Nr.</label>
-                        <input type="text" id="c-reiscode" class="w-full bg-transparent font-black text-lg outline-none text-white">
-                    </div>
-                    <div class="bg-slate-950 p-3 rounded-xl border border-white/5">
-                        <label class="text-[9px] font-black text-sky-400 uppercase block mb-1">Personen</label>
-                        <input type="number" id="c-personen" class="w-full bg-transparent font-black text-lg outline-none text-white" value="4">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="relative">
-                        <input type="text" id="c-van" class="w-full bg-slate-950 p-4 rounded-xl border border-white/5 text-white font-bold" placeholder="Van" oninput="showSuggestions(this)">
-                        <div id="suggestions-van" class="autocomplete-suggestions hidden"></div>
-                    </div>
-                    <div class="relative">
-                        <input type="text" id="c-naar" class="w-full bg-slate-950 p-4 rounded-xl border border-white/5 text-white font-bold" placeholder="Naar" oninput="showSuggestions(this)">
-                        <div id="suggestions-naar" class="autocomplete-suggestions hidden"></div>
-                    </div>
-                </div>
-                <div class="bg-sky-500/10 p-3 rounded-xl border border-sky-500/20">
-                    <div class="flex justify-between mb-1"><span class="text-[9px] font-black text-sky-400 uppercase">Aankomst (ETA)</span><button onclick="setCurrentTime('c-a-datum', 'c-a-tijd')" class="btn-now px-2 py-0.5 rounded text-[8px] font-black">NU</button></div>
-                    <input type="date" id="c-a-datum" class="bg-transparent text-[10px] w-full text-white"><input type="time" id="c-a-tijd" class="bg-transparent font-black text-lg w-full text-white">
-                </div>
-                <div class="bg-violet-500/10 p-3 rounded-xl border border-violet-500/20">
-                    <div class="flex justify-between mb-1"><span class="text-[9px] font-black text-violet-400 uppercase">Vertrek (ETD)</span><button onclick="setCurrentTime('c-v-datum', 'c-v-tijd')" class="btn-now px-2 py-0.5 rounded text-[8px] font-black">NU</button></div>
-                    <input type="date" id="c-v-datum" class="bg-transparent text-[10px] w-full text-white"><input type="time" id="c-v-tijd" class="bg-transparent font-black text-lg w-full text-white">
-                </div>
-            </div>
-            <button onclick="openModal('terminal-select-modal')" class="w-full py-4 border-2 border-dashed border-sky-500/30 rounded-xl text-sky-400 font-black text-xs mb-4 uppercase">+ Terminal Toevoegen</button>
-            <div id="terminal-preview" class="flex flex-wrap gap-2 mb-6"></div>
-            <div class="flex gap-3">
-                <button onclick="closeModal('trip-modal')" class="flex-1 font-black text-[10px] opacity-40 uppercase text-white">Terug</button>
-                <button onclick="saveTrip()" class="flex-[3] py-4 btn-gradient rounded-xl font-black text-white uppercase">Opslaan</button>
-            </div>
-        </div>
-    </div>
+<script>
+/* ===================== DATA ===================== */
+let reizen = JSON.parse(localStorage.getItem('du_reizen_v401') || '[]');
+let expandedTripIndex = 0;
 
-    <div id="terminal-select-modal" class="modal-overlay p-4">
-        <div class="bg-slate-900 w-full max-w-xs rounded-[2rem] p-6 border border-white/10">
-            <h3 class="font-black text-[10px] uppercase mb-6 text-center text-white/40 tracking-widest">Wähle Terminal</h3>
-            <div class="grid grid-cols-2 gap-3">
-                <script>['RRT','GWW','DCT','DIT','D3T','MTD'].forEach(t => document.write(`<button onclick="selectTerminal('${t}')" class="py-4 bg-slate-950 rounded-xl font-black text-lg border border-white/5 text-white hover:text-sky-400 uppercase">${t}</button>`));</script>
-            </div>
-        </div>
-    </div>
+/* ===================== MODALS ===================== */
+function openModal(id){ document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
 
-    <div id="container-count-modal" class="modal-overlay p-4">
-        <div class="bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-6 border border-white/10 shadow-2xl">
-            <h3 id="term-label" class="text-center text-4xl font-black text-white mb-6 uppercase italic tracking-tighter">TERMINAL</h3>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-red-500/5 border border-red-500/20 p-4 rounded-3xl text-center space-y-4">
-                    <span class="text-[11px] font-black text-red-500 uppercase tracking-widest">Lossen</span>
-                    <div><span class="text-[8px] text-white/40 uppercase block mb-1">Vol</span><input type="number" id="dis-full" class="bg-transparent text-center font-black text-2xl text-white w-full" value="0"></div>
-                    <div><span class="text-[8px] text-white/40 uppercase block mb-1">Leeg</span><input type="number" id="dis-empty" class="bg-transparent text-center font-black text-2xl text-white w-full" value="0"></div>
-                </div>
-                <div class="bg-emerald-500/5 border border-emerald-500/20 p-4 rounded-3xl text-center space-y-4">
-                    <span class="text-[11px] font-black text-emerald-500 uppercase tracking-widest">Laden</span>
-                    <div><span class="text-[8px] text-white/40 uppercase block mb-1">Vol</span><input type="number" id="load-full" class="bg-transparent text-center font-black text-2xl text-white w-full" value="0"></div>
-                    <div><span class="text-[8px] text-white/40 uppercase block mb-1">Leeg</span><input type="number" id="load-empty" class="bg-transparent text-center font-black text-2xl text-white w-full" value="0"></div>
-                </div>
-            </div>
-            <button onclick="confirmTerminalData()" class="w-full mt-8 py-5 btn-gradient rounded-[1.5rem] font-black text-white uppercase tracking-widest">Toevoegen</button>
-        </div>
-    </div>
+/* ===================== OPSLAAN ===================== */
+function saveTrip(){
+    const r = {
+        code: document.getElementById('c-reiscode').value || 'D-' + Date.now().toString().slice(-4),
+        van: document.getElementById('c-van').value || '?',
+        naar: document.getElementById('c-naar').value || '?',
+        ad: document.getElementById('c-a-datum').value,
+        at: document.getElementById('c-a-tijd').value,
+        vd: document.getElementById('c-v-datum').value,
+        vt: document.getElementById('c-v-tijd').value
+    };
 
-    <div id="settings-modal" class="modal-overlay p-4">
-        <div class="bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-7 border border-white/10 shadow-2xl">
-            <h2 class="text-xl font-black mb-6 uppercase text-sky-400 italic">Instellingen</h2>
-            <div class="space-y-4 text-white">
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] text-white/30 uppercase block">Naam Schip</label><input type="text" id="ship-name" class="w-full bg-transparent font-bold"></div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] text-white/30 uppercase block">ENI</label><input type="text" id="ship-eni" class="w-full bg-transparent font-bold"></div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] text-white/30 uppercase block">Tonnage</label><input type="text" id="ship-ton" class="w-full bg-transparent font-bold"></div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] text-white/30 uppercase block">Email</label><input type="text" id="ship-mail" class="w-full bg-transparent font-bold"></div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] text-white/30 uppercase block">Bevrachter</label><input type="text" id="ship-bevracht" class="w-full bg-transparent font-bold"></div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] text-white/30 uppercase block">Telefoon</label><input type="text" id="ship-tel" class="w-full bg-transparent font-bold"></div>
-            </div>
-            <button onclick="saveSettings()" class="w-full mt-8 py-5 btn-gradient rounded-xl font-black uppercase text-white shadow-xl">Opslaan</button>
-            <button onclick="closeModal('settings-modal')" class="w-full mt-4 text-xs uppercase opacity-40 text-center font-bold text-white">Terug</button>
-        </div>
-    </div>
+    reizen.unshift(r);
+    expandedTripIndex = 0;
 
-    <div id="edit-time-modal" class="modal-overlay p-4">
-        <div class="bg-slate-900 w-full max-w-xs rounded-[2.5rem] p-6 border border-white/10 shadow-2xl">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="edit-time-label" class="font-black text-sky-400 text-lg uppercase italic">AANPASSEN</h3>
-                <button onclick="setCurrentTime('edit-date', 'edit-time')" class="btn-now px-3 py-1 rounded-lg text-[10px] font-black">NU</button>
-            </div>
-            <input type="hidden" id="edit-index"><input type="hidden" id="edit-type">
-            <div class="space-y-4">
-                <input type="date" id="edit-date" class="bg-slate-950 p-4 rounded-xl border border-white/5 text-white w-full">
-                <input type="time" id="edit-time" class="bg-slate-950 p-4 rounded-xl border border-white/5 text-white text-3xl font-black w-full">
-            </div>
-            <button onclick="updateTripTime()" class="w-full mt-6 py-4 btn-gradient rounded-xl font-black text-white uppercase shadow-lg">Bijwerken</button>
-        </div>
-    </div>
-
-    <script>
-        let expandedTripIndex = 0; // alleen de nieuwste open
-
-        let currentTerminal = "", tempTerminalList = [], reizen = JSON.parse(localStorage.getItem('du_reizen_v400') || '[]');
-        const havens = ["Rotterdam", "Amsterdam", "Antwerpen", "Duisburg", "Dusseldorf", "Neuss", "Leverkusen", "Koln"];
-
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); hideSuggestions(); }
-
-        // TOGGLE LOGIC: Reis 0 is open, anderen inklappen/uitklappen
-        function toggleTrip(index) {
-            const card = document.getElementById(`trip-card-${index}`);
-            card.classList.toggle('trip-collapsed');
-        }
-
-        // AUTOCOMPLETE (Hersteld)
-        function showSuggestions(input) {
-            const val = input.value.toLowerCase();
-            const id = input.id === 'c-van' ? 'suggestions-van' : 'suggestions-naar';
-            const suggCont = document.getElementById(id);
-            if (!val) { suggCont.classList.add('hidden'); return; }
-            const matches = havens.filter(h => h.toLowerCase().startsWith(val));
-            if (matches.length > 0) {
-                suggCont.innerHTML = matches.map(m => `<div class="suggestion-item" onclick="selectSuggestion('${input.id}', '${m}')">${m}</div>`).join('');
-                suggCont.classList.remove('hidden');
-            } else { suggCont.classList.add('hidden'); }
-        }
-        function selectSuggestion(inputId, value) { document.getElementById(inputId).value = value; hideSuggestions(); }
-        function hideSuggestions() { document.querySelectorAll('.autocomplete-suggestions').forEach(el => el.classList.add('hidden')); }
-
-        function setCurrentTime(dId, tId) {
-            const n = new Date();
-            document.getElementById(dId).value = n.toISOString().split('T')[0];
-            document.getElementById(tId).value = n.toTimeString().slice(0,5);
-        }
-
-        function selectTerminal(n) { currentTerminal = n; document.getElementById('term-label').innerText = n; closeModal('terminal-select-modal'); openModal('container-count-modal'); }
-
-        function confirmTerminalData() {
-            tempTerminalList.push({
-                name: currentTerminal,
-                lf: parseInt(document.getElementById('load-full').value) || 0,
-                le: parseInt(document.getElementById('load-empty').value) || 0,
-                df: parseInt(document.getElementById('dis-full').value) || 0,
-                de: parseInt(document.getElementById('dis-empty').value) || 0
-            });
-            renderTerminalPreview(); closeModal('container-count-modal');
-        }
-
-        function renderTerminalPreview() {
-            document.getElementById('terminal-preview').innerHTML = tempTerminalList.map(t => `<span class="bg-sky-500/20 text-sky-400 px-3 py-1 rounded-lg text-[10px] font-black border border-sky-500/30 uppercase">${t.name}</span>`).join('');
-        }
-
-        function saveTrip() {
-            const r = {
-                code: document.getElementById('c-reiscode').value || 'D-' + Date.now().toString().slice(-3),
-                personen: document.getElementById('c-personen').value || '4',
-                van: document.getElementById('c-van').value || '?', naar: document.getElementById('c-naar').value || '?',
-                ad: document.getElementById('c-a-datum').value || '', at: document.getElementById('c-a-tijd').value || '',
-                vd: document.getElementById('c-v-datum').value || '', vt: document.getElementById('c-v-tijd').value || '',
-                terminals: [...tempTerminalList]
-            };
-            reizen.unshift(r); 
-            localStorage.setItem('du_reizen_v400', JSON.stringify(reizen));
-            tempTerminalList = []; document.getElementById('terminal-preview').innerHTML = '';
-            renderReizen(); closeModal('trip-modal');
-        }
-
-     function renderReizen() {
-    const lijst = document.getElementById('reizen-lijst');
-
-    lijst.innerHTML = reizen.map((r, i) => {
-        const isOpen = expandedTripIndex === i;
-
-        /* ====== SMALLE BALK (ingeklapt) ====== */
-        if (!isOpen) {
-            return `
-            <div onclick="toggleTrip(${i})"
-                 class="glass-card px-5 py-4 rounded-[2rem] border-l-[6px] border-l-sky-500 cursor-pointer
-                        hover:bg-sky-500/5 transition flex justify-between items-center">
-                <div>
-                    <div class="text-[10px] font-black text-sky-400 uppercase">${r.van} → ${r.naar}</div>
-                    <div class="text-lg font-black italic">${r.code}</div>
-                </div>
-                <i class="fas fa-chevron-down text-white/30"></i>
-            </div>`;
-        }
-
-        /* ====== UITGEKLAPTE REIS ====== */
-        let terminalHtml = r.terminals.map(t => `
-            <div class="bg-slate-900 border border-white/5 rounded-[1.8rem] p-4">
-                <span class="font-black uppercase italic text-xs mb-3 block">
-                    Terminal ${t.name}
-                </span>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <div class="text-[7px] font-black text-red-500 uppercase mb-1">Lossen</div>
-                        <div class="text-sm font-black">${t.df || '-'} / ${t.de || '-'}</div>
-                    </div>
-                    <div>
-                        <div class="text-[7px] font-black text-emerald-500 uppercase mb-1">Laden</div>
-                        <div class="text-sm font-black">${t.lf || '-'} / ${t.le || '-'}</div>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-
-        return `
-        <div class="glass-card p-6 rounded-[2.5rem] border-l-[8px] border-l-sky-500 shadow-2xl">
-            <div onclick="toggleTrip(${i})"
-                 class="flex justify-between items-start mb-6 cursor-pointer">
-                <div>
-                    <span class="px-3 py-1 bg-sky-500/10 text-sky-400 text-[10px] font-black uppercase rounded-full">
-                        ${r.van} → ${r.naar}
-                    </span>
-                    <h2 class="text-4xl font-black italic uppercase mt-2">${r.code}</h2>
-                </div>
-                <i class="fas fa-chevron-up text-white/40"></i>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <div class="p-4 bg-slate-950/50 rounded-3xl">
-                    <span class="text-[9px] font-black text-sky-400 uppercase">ETA</span>
-                    <div class="text-2xl font-black">${r.at || '--:--'}</div>
-                    <div class="text-xs opacity-40">${r.ad || '-'}</div>
-                </div>
-                <div class="p-4 bg-slate-950/50 rounded-3xl">
-                    <span class="text-[9px] font-black text-violet-400 uppercase">ETD</span>
-                    <div class="text-2xl font-black">${r.vt || '--:--'}</div>
-                    <div class="text-xs opacity-40">${r.vd || '-'}</div>
-                </div>
-            </div>
-
-            <div class="space-y-3">${terminalHtml}</div>
-        </div>`;
-    }).join('') || `
-        <div class="text-center py-20 opacity-20 text-xs font-black uppercase">
-            Geen reizen aanwezig
-        </div>`;
+    localStorage.setItem('du_reizen_v401', JSON.stringify(reizen));
+    closeModal('trip-modal');
+    renderReizen();
 }
 
-                    
-                    <div class="details-content mt-6">
-                        <div class="grid grid-cols-2 gap-4 mb-6">
-                            <div onclick="event.stopPropagation(); openEditTime(${i}, 'ETA')" class="p-4 bg-slate-950/50 rounded-3xl border border-white/5">
-                                <span class="text-[9px] font-black text-sky-400 uppercase block mb-1">Ankunft (ETA)</span>
-                                <span class="text-2xl font-black block text-white">${r.at || '--:--'}</span>
-                                <span class="text-[11px] font-bold text-white/30">${r.ad || '-'}</span>
-                            </div>
-                            <div onclick="event.stopPropagation(); openEditTime(${i}, 'ETD')" class="p-4 bg-slate-950/50 rounded-3xl border border-white/5">
-                                <span class="text-[9px] font-black text-violet-400 uppercase block mb-1">Abfahrt (ETD)</span>
-                                <span class="text-2xl font-black block text-white">${r.vt || '--:--'}</span>
-                                <span class="text-[11px] font-bold text-white/30">${r.vd || '-'}</span>
-                            </div>
-                        </div>
-                        <div class="space-y-1">${terminalHtml}</div>
-                    </div>
-                </div>`;
-            }).join('') || '<div class="text-center py-20 opacity-20 text-[10px] font-black uppercase tracking-widest">Keine Fahrten vorhanden</div>';
-        }
-
-        // FULL PDF EXPORT (Hersteld naar jouw originele layout)
-        async function exportTrip(index) {
-            const r = reizen[index], s = JSON.parse(localStorage.getItem('ship_info_v400') || '{}');
-            const { jsPDF } = window.jspdf; const doc = new jsPDF();
-            
-            doc.setFillColor(2, 6, 23); doc.rect(0, 0, 210, 45, 'F');
-            doc.setTextColor(56, 189, 248); doc.setFontSize(28); doc.setFont("helvetica", "bold"); 
-            doc.text("DUISBURG Hafenmeister", 15, 25);
-            doc.setTextColor(255); doc.setFontSize(9); doc.text("OFFIZIELLE HAFENDEKLARATION / MANIFEST", 15, 33);
-            
-            doc.setTextColor(15, 23, 42); doc.setFontSize(11); doc.text("SCHIFFS- UND REISEINFORMATIONEN", 15, 58);
-            doc.setFontSize(9); doc.text([`Naam: ${s.name || '-'}`,`ENI: ${s.eni || '-'}`,`Tonnage: ${s.ton || '-'} t`,`Route: ${r.van} > ${r.naar}`,`Personen: ${r.personen}`,`Ankunft: ${r.ad} ${r.at}`,`Abfahrt: ${r.vd} ${r.vt}`], 15, 70);
-
-            const bodyData = r.terminals.map(t => [t.name, t.lf, t.le, t.df, t.de]);
-            doc.autoTable({
-                startY: 110,
-                head: [['TERMINAL', 'LADEN (Vol)', 'LADEN (Leeg)', 'LOSSEN (Vol)', 'LOSSEN (Leeg)']],
-                body: bodyData,
-                theme: 'striped',
-                headStyles: { fillColor: [15, 23, 42] }
-            });
-
-            document.getElementById('pdf-frame').src = doc.output('bloburl');
-            document.getElementById('pdf-download-btn').onclick = () => doc.save(`Duisburg_${r.code}.pdf`);
-            document.getElementById('pdf-email-btn').onclick = () => {
-                window.location.href = `mailto:anmeldung@duisport.de?subject=Hafendeklaration: ${s.name}&body=Anbei de Hafendeklaration dossier ${r.code}.`;
-            };
-            openModal('pdf-modal');
-        }
-
-        function openEditTime(i, t) {
-            const r = reizen[i]; document.getElementById('edit-index').value = i; document.getElementById('edit-type').value = t;
-            if(t === 'ETA') { document.getElementById('edit-date').value = r.ad; document.getElementById('edit-time').value = r.at; }
-            else { document.getElementById('edit-date').value = r.vd; document.getElementById('edit-time').value = r.vt; }
-            openModal('edit-time-modal');
-        }
-        function updateTripTime() {
-            const idx = document.getElementById('edit-index').value;
-            const t = document.getElementById('edit-type').value;
-            if(t === 'ETA') { reizen[idx].ad = document.getElementById('edit-date').value; reizen[idx].at = document.getElementById('edit-time').value; }
-            else { reizen[idx].vd = document.getElementById('edit-date').value; reizen[idx].vt = document.getElementById('edit-time').value; }
-            localStorage.setItem('du_reizen_v400', JSON.stringify(reizen)); renderReizen(); closeModal('edit-time-modal');
-        }
-        function saveSettings() {
-            const info = { name: document.getElementById('ship-name').value, eni: document.getElementById('ship-eni').value, ton: document.getElementById('ship-ton').value, tel: document.getElementById('ship-tel').value, mail: document.getElementById('ship-mail').value, bevracht: document.getElementById('ship-bevracht').value };
-            localStorage.setItem('ship_info_v400', JSON.stringify(info)); updateShipDisplay(); closeModal('settings-modal');
-        }
-        function updateShipDisplay() {
-            const s = JSON.parse(localStorage.getItem('ship_info_v400') || '{}');
-            document.getElementById('active-ship-display').innerText = s.name ? `${s.name} (${s.eni || '?'})` : 'Gegevens invoeren...';
-            ['ship-name','ship-eni','ship-ton','ship-tel','ship-mail','ship-bevracht'].forEach(id => { document.getElementById(id).value = s[id.replace('ship-', '')] || ''; });
-        }
-        function deleteTrip(i) { if(confirm('Reis verwijderen?')) { reizen.splice(i,1); localStorage.setItem('du_reizen_v400', JSON.stringify(reizen)); renderReizen(); } }
-        
-        window.onload = () => { updateShipDisplay(); renderReizen(); };
-
-        function toggleTrip(index) {
+/* ===================== TOGGLE ===================== */
+function toggleTrip(index){
     expandedTripIndex = expandedTripIndex === index ? null : index;
     renderReizen();
 }
 
-    </script>
+/* ===================== RENDER ===================== */
+function renderReizen(){
+    const lijst = document.getElementById('reizen-lijst');
+
+    lijst.innerHTML = reizen.map((r,i)=>{
+        const open = expandedTripIndex === i;
+
+        if(!open){
+            return `
+            <div onclick="toggleTrip(${i})"
+                 class="glass-card px-5 py-4 rounded-2xl cursor-pointer flex justify-between items-center">
+                <div>
+                    <div class="text-xs text-sky-400 font-black">${r.van} → ${r.naar}</div>
+                    <div class="text-lg font-black italic">${r.code}</div>
+                </div>
+                <i class="fas fa-chevron-down opacity-40"></i>
+            </div>`;
+        }
+
+        return `
+        <div class="glass-card p-6 rounded-3xl">
+            <div onclick="toggleTrip(${i})" class="cursor-pointer mb-4 flex justify-between">
+                <div>
+                    <span class="text-xs font-black text-sky-400">${r.van} → ${r.naar}</span>
+                    <h2 class="text-3xl font-black italic">${r.code}</h2>
+                </div>
+                <i class="fas fa-chevron-up opacity-40"></i>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-slate-800 p-4 rounded-2xl">
+                    <div class="text-xs text-sky-400 font-black">ETA</div>
+                    <div class="text-xl font-black">${r.at || '--:--'}</div>
+                    <div class="text-xs opacity-40">${r.ad || '-'}</div>
+                </div>
+                <div class="bg-slate-800 p-4 rounded-2xl">
+                    <div class="text-xs text-violet-400 font-black">ETD</div>
+                    <div class="text-xl font-black">${r.vt || '--:--'}</div>
+                    <div class="text-xs opacity-40">${r.vd || '-'}</div>
+                </div>
+            </div>
+        </div>`;
+    }).join('') || `
+        <div class="opacity-30 text-center text-sm font-black uppercase">
+            Geen reizen
+        </div>`;
+}
+
+/* ===================== INIT ===================== */
+renderReizen();
+</script>
+
 </body>
 </html>
-
