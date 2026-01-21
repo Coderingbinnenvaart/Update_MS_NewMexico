@@ -478,24 +478,39 @@ function renderReizen() {
 
         return `
         <div class="glass-card p-6 rounded-[2.5rem] border-l-[8px] border-l-sky-500 shadow-2xl relative overflow-hidden mb-6">
-            <div onclick="toggleTrip(${i})"
-                 class="flex justify-between items-start mb-6 cursor-pointer">
-                <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="px-3 py-1 bg-sky-500/10 text-sky-400 text-[10px] font-black uppercase rounded-full border border-sky-500/20">
-                            ${r.van} > ${r.naar}
-                        </span>
-                        <span class="bg-white/5 px-3 py-1 rounded-full text-white/50 text-[10px] font-bold">
-                            <i class="fas fa-users mr-1 text-sky-400"></i>${r.personen}
-                        </span>
-                    </div>
-                    <h2 class="text-4xl font-black italic uppercase text-white tracking-tighter">
-                        ${r.code}
-                    </h2>
-                </div>
-                <i class="fas fa-chevron-up text-white/30"></i>
-            </div>
+<div class="flex justify-between items-start mb-6">
+    <div onclick="toggleTrip(${i})" class="flex-1 cursor-pointer">
+        <div class="flex items-center gap-2 mb-2">
+            <span class="px-3 py-1 bg-sky-500/10 text-sky-400 text-[10px] font-black uppercase rounded-full border border-sky-500/20">
+                ${r.van} > ${r.naar}
+            </span>
+            <span class="bg-white/5 px-3 py-1 rounded-full text-white/50 text-[10px] font-bold">
+                <i class="fas fa-users mr-1 text-sky-400"></i>${r.personen}
+            </span>
+        </div>
+        <h2 class="text-4xl font-black italic uppercase text-white tracking-tighter">
+            ${r.code}
+        </h2>
+    </div>
 
+    <!-- ACTIEKNOPPEN -->
+    <div class="flex gap-2">
+        <button onclick="exportTrip(${i})"
+            class="w-12 h-12 flex items-center justify-center bg-sky-500 rounded-2xl text-white shadow-lg active:scale-95 transition-all">
+            <i class="fas fa-file-pdf text-lg"></i>
+        </button>
+
+        <button onclick="deleteTrip(${i})"
+            class="w-10 h-10 flex items-center justify-center text-white/20 hover:text-red-500 transition-colors">
+            <i class="fas fa-trash-alt"></i>
+        </button>
+
+        <button onclick="toggleTrip(${i})"
+            class="w-10 h-10 flex items-center justify-center text-white/30 hover:text-white transition">
+            <i class="fas fa-chevron-up"></i>
+        </button>
+    </div>
+</div>
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <div onclick="openEditTime(${i}, 'ETA')" class="p-4 bg-slate-950/50 rounded-3xl border border-white/5 cursor-pointer">
                     <span class="text-[9px] font-black text-sky-400 uppercase block mb-1">Ankunft (ETA)</span>
