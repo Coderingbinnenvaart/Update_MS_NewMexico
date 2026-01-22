@@ -1,0 +1,8 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\marad]
+@="URL:Marad Protocol"
+"URL Protocol"=""
+
+[HKEY_CLASSES_ROOT\marad\shell\open\command]
+@="\"C:\\Program Files (x86)\\MaraSoft\\Marad\\marad.exe\""
