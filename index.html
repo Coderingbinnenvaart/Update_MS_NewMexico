@@ -148,9 +148,13 @@
         .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; width: 100%; max-width: 800px; padding-bottom: 50px; }
         .card { height: 120px; background: linear-gradient(145deg, #1e3a8a 0%, #020617 100%); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; transition: 0.3s; padding: 15px; }
         .card:hover { transform: translateY(-10px); border-color: var(--glow-blue); }
-        .card img { height: 40px; margin-bottom: 10px; }
-        .card span { color: white; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; text-align: center; }
 
+        .card span { color: white; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; text-align: center; }
+.card img { 
+    margin-bottom: 10px; 
+    max-width: 90%; 
+    object-fit: contain; 
+}
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
     </style>
@@ -175,7 +179,7 @@
             </button>
             
             <div id="settings-menu" class="hidden absolute left-0 mt-4 w-48 bg-slate-900 border border-blue-500/30 rounded-xl shadow-2xl overflow-hidden z-[2000]">
-                <a href="update://" class="flex items-center gap-3 px-4 py-3 hover:bg-blue-600/20 text-white transition-colors border-b border-white/5">
+<a href="update://" onclick="setTimeout(() => { location.reload(); }, 9000);" class="flex items-center gap-3 px-4 py-3 hover:bg-blue-600/20 text-white transition-colors border-b border-white/5">
                     <span class="text-lg">⚙️</span>
                     <span class="text-xs font-bold uppercase tracking-wider">Update</span>
                 </a>
@@ -236,7 +240,7 @@
 
 <div class="btn-grid">
     <a href="waterstanden.html" target="_blank" class="card">
-        <img src="pic/Schipzijhoogtesth2.png" style="height: 45px;">
+        <img src="pic/Schipzijhoogtesth2.png" style="height: 40px;">
         <span>Brughoogte</span>
     </a>
 
@@ -246,17 +250,17 @@
     </a>
 
     <a href="https://nextlogic-planning.com/" target="_blank" class="card">
-        <img src="pic/nextlogic_logo.png" style="height: 50px;">
+        <img src="pic/nextlogic_logo.png" style="height: 45px;">
         <span>Nextlogic</span>
     </a>
 
     <a href="adn.html" target="_blank" class="card">
-        <img src="pic/adn.png" style="height: 50px;">
+        <img src="pic/adn.png" style="height: 40px;">
         <span>ADN</span>
     </a>
 
     <a href="https://cwl.modality.nl/barge-app/login" target="_blank" class="card">
-        <img src="pic/cwl_modality_logo.png" style="height: 35px;">
+        <img src="pic/cwl_modality_logo.png" style="height: 30px;">
         <span>Contargo</span>
     </a>
 
@@ -266,17 +270,17 @@
     </a>
 
     <a href="https://waterinfo.rws.nl/publiek/waterhoogte" target="_blank" class="card">
-        <img src="pic/rws_logo.png" style="height: 40px;">
+        <img src="pic/rws_logo.png" style="height: 50px;">
         <span>RWS</span>
     </a>
 
     <a href="https://www.elwis.de/DE/dynamisch/Wasserstaende/Pegelliste:area:RHEINGEBIET" target="_blank" class="card">
-        <img src="pic/elwis_logo.png" style="height: 40px;">
+        <img src="pic/elwis_logo.png" style="height: 45px;">
         <span>Elwis</span>
     </a>
 
     <a href="https://fleet.tresco.eu/map" target="_blank" class="card">
-        <img src="pic/tresco.png" style="height: 45px;">
+        <img src="pic/tresco.png" style="height: 40px;">
         <span>Wijgaart</span>
     </a>
 
@@ -301,7 +305,7 @@
     </a>
 
     <a href="marad://" target="_blank" class="card">
-        <img src="pic/marad.png" style="height: 50px;">
+        <img src="pic/marad.png" style="height: 45px;">
         <span>Marad</span>
     </a>
 </div>
@@ -437,9 +441,6 @@ window.addEventListener('click', function(e) {
     </script>
 </body>
 </html>
-
-
-
 
 
 
