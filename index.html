@@ -89,9 +89,20 @@
             transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .left { top: 110px; left: 25px; width: 320px; }
-        .right { top: 110px; right: 25px; width: 420px; overflow: hidden; }
-        
+/* Zoek deze regels op (rond regel 80) en vervang ze: */
+.left { 
+    top: 20%; 
+    left: 25px; 
+    width: 320px; 
+}
+
+.right { 
+    top: 20%; 
+    right: 25px; 
+    width: 420px; 
+    overflow: hidden; 
+}
+
         .side-panel.right.hidden-panel { transform: translateX(calc(100% + 50px)); }
 
         .toggle-tab {
@@ -177,14 +188,43 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
             </button>
+</div>
             
-            <div id="settings-menu" class="hidden absolute left-0 mt-4 w-48 bg-slate-900 border border-blue-500/30 rounded-xl shadow-2xl overflow-hidden z-[2000]">
-<a href="update://" onclick="setTimeout(() => { location.reload(); }, 6000);" class="flex items-center gap-3 px-4 py-3 hover:bg-blue-600/20 text-white transition-colors border-b border-white/5">
-                    <span class="text-lg">⚙️</span>
-                    <span class="text-xs font-bold uppercase tracking-wider">Update</span>
-                </a>
+<div id="settings-menu" class="hidden absolute left-0 top-[90px] w-64 bg-slate-950/90 backdrop-blur-2xl border border-blue-500/40 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] overflow-hidden z-[2000] ring-1 ring-white/10">
+    <div class="px-5 py-4 bg-blue-500/10 border-b border-white/10">
+        <h4 class="text-[0.7rem] font-black text-blue-400 uppercase tracking-[3px] text-left">Systeembeheer</h4>
+    </div>
+    <div class="p-2 space-y-1">
+        <a href="update://" onclick="setTimeout(() => { location.reload(); }, 6000);" class="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-blue-600/20 text-white transition-all duration-300 group">
+            <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-blue-500/10 border border-blue-500/20 group-hover:scale-110 group-hover:bg-blue-500/30 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
             </div>
-        </div>
+            <div class="flex flex-col">
+                <span class="text-[0.75rem] font-black uppercase tracking-wide">Update</span>
+                <span class="text-[0.55rem] text-slate-400 font-bold">Versie synchroniseren</span>
+            </div>
+        </a>
+
+        <button onclick="location.reload()" class="w-full flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-slate-800 text-white transition-all duration-300 group">
+            <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 group-hover:bg-white/10 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+            </div>
+            <div class="flex flex-col text-left">
+                <span class="text-[0.75rem] font-black uppercase tracking-wide">Herstarten</span>
+                <span class="text-[0.55rem] text-slate-400 font-bold">Dashboard verversen</span>
+            </div>
+        </button>
+    </div>
+
+    <div class="px-5 py-3 bg-black/40 flex justify-between items-center">
+        <span class="text-[0.5rem] font-bold text-slate-500 uppercase">Status: Online</span>
+        <div class="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></div>
+    </div>
+</div>
 
         <h1>MS NEW MEXICO</h1>
 
@@ -201,6 +241,7 @@
         <div class="data-card"><span class="panel-label">Afmetingen</span><span class="panel-val">135 x 14,2 x 3,61 m</span></div>
         <div class="data-card"><span class="panel-label">Tonnage</span><span class="panel-val">4800 T</span></div>
         <div class="data-card"><span class="panel-label">Capaciteit</span><span class="panel-val">421 TEU</span></div>
+<p class="text-[0.55rem] text-blue-400 font-bold uppercase tracking-[2px] text-center mt-4 opacity-70 italic">Klik voor meer informatie</p>
     </aside>
 
     <aside id="right-panel" class="side-panel right">
@@ -331,11 +372,11 @@
                     <h4 class="text-blue-400 text-[0.6rem] font-black uppercase tracking-widest mb-3 border-b border-blue-900/30 pb-1 text-center">Specificaties</h4>
                     <div class="space-y-2">
                         <div class="bg-white/5 p-2 rounded-lg border border-white/5 text-center">
-                            <p class="text-[0.5rem] text-slate-500 uppercase font-bold tracking-widest">ENI Nummer</p>
-                            <p class="text-xs font-black text-white">02328697</p>
+                            <p class="text-[0.5rem] text-slate-500 uppercase font-bold tracking-widest">Roepnaam</p>
+                            <p class="text-xs font-black text-white">PD 5829</p>
                         </div>
                         <div class="bg-white/5 p-2 rounded-lg border border-white/5 text-center">
-                            <p class="text-[0.5rem] text-slate-500 uppercase font-bold tracking-widest">Afmetingen</p>
+                            <p class="text-[0.5rem] text-slate-500 uppercase font-bold tracking-widest"></p>
                             <p class="text-xs font-black text-white">135 x 14,20 m</p>
                         </div>
                         <div class="bg-white/5 p-2 rounded-lg border border-white/5 text-center border-blue-500/30">
