@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MS New Mexico</title>
+    <title>MS New Mexicogggg</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
@@ -524,29 +524,35 @@ const githubUrl = "https://raw.githubusercontent.com/Coderingbinnenvaart/Update_
 
 async function checkForUpdates() {
     try {
-        const response = await fetch(githubUrl);
+        // We voegen ?t= + timestamp toe om de cache te omzeilen
+        const response = await fetch(githubUrl + "?t=" + new Date().getTime());
+        if (!response.ok) throw new Error('Netwerk response was niet ok');
+        
         const text = await response.text();
         
         // Zoek naar de versie op GitHub
         const match = text.match(/const currentVersion = "(.*?)"/);
         const remoteVersion = match ? match[1] : null;
 
+        console.log("Huidige versie:", currentVersion);
+        console.log("Versie op GitHub:", remoteVersion);
+
         if (remoteVersion && remoteVersion !== currentVersion) {
-            // VERSIE IS ANDERS: Laat tandwiel rood knipperen
             const settingsBtn = document.getElementById('settings-btn');
             const versionText = document.getElementById('version-text');
             
-            if (settingsBtn) settingsBtn.classList.add('update-alert');
+            if (settingsBtn) {
+                settingsBtn.classList.add('update-alert');
+            }
             if (versionText) {
                 versionText.textContent = "Nieuwe versie beschikbaar!";
-                versionText.classList.replace('text-slate-400', 'text-red-500');
+                versionText.style.color = "#ef4444"; // Forceer rode kleur
             }
         }
     } catch (error) {
-        console.log("Update check mislukt");
+        console.error("Update check mislukt:", error);
     }
 }
-
 // Start de check 2 seconden na laden
 window.addEventListener('load', () => {
     setTimeout(checkForUpdates, 2000);
@@ -688,5 +694,6 @@ window.addEventListener('click', function(e) {
     </script>
 </body>
 </html>
+
 
 
