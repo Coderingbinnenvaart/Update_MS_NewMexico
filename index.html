@@ -519,39 +519,41 @@
 
     <script>
 // STEL JE HUIDIGE VERSIE HIER IN
-        const currentVersion = "1.0.0"; 
+        const currentVersion = "1.0.1"; 
 const githubUrl = "https://raw.githubusercontent.com/Coderingbinnenvaart/Update_MS_NewMexico/refs/heads/main/index.html";
 
 async function checkForUpdates() {
     try {
-        const response = await fetch(githubUrl + "?t=" + new Date().getTime());
+        // We voegen een uniek nummer toe aan de URL zodat GitHub nooit een oude versie stuurt
+        const response = await fetch(githubUrl + "?nocache=" + new Date().getTime());
         if (!response.ok) throw new Error('Netwerk response was niet ok');
         
         const text = await response.text();
         const match = text.match(/const currentVersion = "(.*?)"/);
         
-        // .trim() zorgt dat "1.0.0 " ook gewoon "1.0.0" wordt
+        // .trim() verwijdert onzichtbare spaties of enters
         const remoteVersion = match ? match[1].trim() : null;
         const localVersion = currentVersion.trim();
+
+        // DEBUG: Dit zie je in de Console (F12)
+        console.log("DEBUG: Lokaal [" + localVersion + "] vs GitHub [" + remoteVersion + "]");
 
         const settingsBtn = document.getElementById('settings-btn');
         const versionText = document.getElementById('version-text');
 
-        console.log("Check - Lokaal:", localVersion, "GitHub:", remoteVersion);
-
         if (remoteVersion && remoteVersion !== localVersion) {
-            // VERSCHILLEND -> Maak rood
-            if (settingsBtn) settingsBtn.classList.add('update-alert');
+            // ZE ZIJN ANDERS -> UPDATE NODIG
+            settingsBtn?.classList.add('update-alert');
             if (versionText) {
-                versionText.textContent = "Nieuwe versie beschikbaar!";
+                versionText.textContent = "Update beschikbaar: " + remoteVersion;
                 versionText.style.color = "#ef4444";
             }
         } else {
-            // GELIJK -> Verwijder rood
-            if (settingsBtn) settingsBtn.classList.remove('update-alert');
+            // ZE ZIJN GELIJK -> ALLES OK
+            settingsBtn?.classList.remove('update-alert');
             if (versionText) {
                 versionText.textContent = "Versie up-to-date (" + localVersion + ")";
-                versionText.style.color = ""; // Terug naar standaard kleur (slate-400)
+                versionText.style.color = ""; 
             }
         }
     } catch (error) {
@@ -700,6 +702,7 @@ window.addEventListener('click', function(e) {
     </script>
 </body>
 </html>
+
 
 
 
