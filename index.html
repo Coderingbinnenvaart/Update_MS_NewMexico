@@ -203,18 +203,18 @@
         <div class="px-5 py-4 bg-blue-500/10 border-b border-white/10">
             <h4 class="text-[0.7rem] font-black text-blue-400 uppercase tracking-[3px] text-left">Systeembeheer</h4>
         </div>
-        <div class="p-2 space-y-1">
-            <a href="https://github.com/Coderingbinnenvaart/Update_MS_NewMexico/blob/main/index.html" target="_blank" class="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-blue-600/20 text-white transition-all duration-300 group">
-                <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-blue-500/10 border border-blue-500/20 group-hover:scale-110 group-hover:bg-blue-500/30 transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                </div>
-                <div class="flex flex-col text-left">
-                    <span class="text-[0.75rem] font-black uppercase tracking-wide">Update</span>
-                    <span id="version-text" class="text-[0.55rem] text-slate-400 font-bold">Versie synchroniseren</span>
-                </div>
-            </a>
+<div class="p-2 space-y-1">
+        <a href="update://" onclick="setTimeout(() => { location.reload(); }, 6000);" class="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-blue-600/20 text-white transition-all duration-300 group">
+            <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-blue-500/10 border border-blue-500/20 group-hover:scale-110 group-hover:bg-blue-500/30 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+            </div>
+<div class="flex flex-col">
+    <span class="text-[0.75rem] font-black uppercase tracking-wide">Update</span>
+    <span id="version-text" class="text-[0.55rem] text-slate-400 font-bold">Versie synchroniseren</span>
+</div>
+        </a>
 
             <button onclick="location.reload()" class="w-full flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-slate-800 text-white transition-all duration-300 group">
                 <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 group-hover:bg-white/10 transition-all">
@@ -519,7 +519,7 @@
 
     <script>
 // STEL JE HUIDIGE VERSIE HIER IN
-const currentVersion = "1.0.01"; 
+const currentVersion = "1.0.0"; 
 const githubUrl = "https://raw.githubusercontent.com/Coderingbinnenvaart/Update_MS_NewMexico/refs/heads/main/index.html";
 
 async function checkForUpdates() {
@@ -694,7 +694,6 @@ window.addEventListener('click', function(e) {
     </script>
 </body>
 </html>
-
 
 
 
