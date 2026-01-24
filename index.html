@@ -528,32 +528,30 @@ async function checkForUpdates() {
         if (!response.ok) throw new Error('Netwerk response was niet ok');
         
         const text = await response.text();
-        
-        // Zoek naar de versie op GitHub
         const match = text.match(/const currentVersion = "(.*?)"/);
-        const remoteVersion = match ? match[1] : null;
+        
+        // .trim() zorgt dat "1.0.0 " ook gewoon "1.0.0" wordt
+        const remoteVersion = match ? match[1].trim() : null;
+        const localVersion = currentVersion.trim();
 
         const settingsBtn = document.getElementById('settings-btn');
         const versionText = document.getElementById('version-text');
 
-        // CONTROLE: Alleen rood als de versies VERSCHILLEN
-        if (remoteVersion && remoteVersion !== currentVersion) {
-            // ER IS EEN UPDATE (Versies zijn niet gelijk)
-            if (settingsBtn) {
-                settingsBtn.classList.add('update-alert');
-            }
+        console.log("Check - Lokaal:", localVersion, "GitHub:", remoteVersion);
+
+        if (remoteVersion && remoteVersion !== localVersion) {
+            // VERSCHILLEND -> Maak rood
+            if (settingsBtn) settingsBtn.classList.add('update-alert');
             if (versionText) {
                 versionText.textContent = "Nieuwe versie beschikbaar!";
-                versionText.style.color = "#ef4444"; 
+                versionText.style.color = "#ef4444";
             }
         } else {
-            // GEEN UPDATE (Versies zijn gelijk)
-            if (settingsBtn) {
-                settingsBtn.classList.remove('update-alert');
-            }
+            // GELIJK -> Verwijder rood
+            if (settingsBtn) settingsBtn.classList.remove('update-alert');
             if (versionText) {
-                versionText.textContent = "Systeem up-to-date (" + currentVersion + ")";
-                versionText.style.color = ""; // Herstel naar standaard kleur
+                versionText.textContent = "Versie up-to-date (" + localVersion + ")";
+                versionText.style.color = ""; // Terug naar standaard kleur (slate-400)
             }
         }
     } catch (error) {
@@ -702,6 +700,7 @@ window.addEventListener('click', function(e) {
     </script>
 </body>
 </html>
+
 
 
 
