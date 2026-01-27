@@ -550,7 +550,7 @@
 
     <script>
 // STEL JE HUIDIGE VERSIE HIER IN
-        const currentVersion = "1.1.0"; 
+        const currentVersion = "1.1.1"; 
 const githubUrl = "https://raw.githubusercontent.com/Coderingbinnenvaart/Update_MS_NewMexico/refs/heads/main/index.html";
 
 async function checkForUpdates() {
@@ -591,10 +591,12 @@ async function checkForUpdates() {
         console.error("Update check mislukt:", error);
     }
 }
-// Start de check 2 seconden na laden
 window.addEventListener('load', () => {
     setTimeout(checkForUpdates, 2000);
-}); 
+    
+    // Kijk daarna elke 30 minuten automatisch of er een update is
+    setInterval(checkForUpdates, 1800000); 
+});
         const stations = [
             { id: 1, name: "Hoek van Holland", url: "https://waterinfo.rws.nl/publiek/waterhoogte/Hoek-van-Holland%28HOEK%29/details", top: "-200px", left: "-15%", width: "130%" },
             { id: 2, name: "Dordrecht", url: "https://waterinfo.rws.nl/publiek/waterhoogte/Dordrecht%28DORD%29/details", top: "-200px", left: "-15%", width: "130%" },
