@@ -235,331 +235,358 @@
 
 <script>
 let currentTerminal = "", tempTerminalList = [], reizen = JSON.parse(localStorage.getItem('du_reizen_v400') || '[]');
-    let expandedTripIndex = 0; // nieuwste reis standaard open
+let expandedTripIndex = 0; // nieuwste reis standaard open
 
-    const havens = ["Rotterdam", "Amsterdam", "Antwerpen", "Duisburg", "Dusseldorf", "Neuss", "Leverkusen", "Koln"];
-    let currentFocusIndex = -1;
+const havens = ["Rotterdam", "Amsterdam", "Antwerpen", "Duisburg", "Dusseldorf", "Neuss", "Leverkusen", "Koln"];
+let currentFocusIndex = -1;
 
-    function openModal(id) { document.getElementById(id).classList.add('active'); }
-    function closeModal(id) { 
-        document.getElementById(id).classList.remove('active');
-        hideSuggestions();
-    }
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { 
+    document.getElementById(id).classList.remove('active');
+    hideSuggestions();
+}
 
-    function hideSuggestions() {
-        document.getElementById('suggestions-van').classList.add('hidden');
-        document.getElementById('suggestions-naar').classList.add('hidden');
-        currentFocusIndex = -1;
-    }
+function hideSuggestions() {
+    document.getElementById('suggestions-van').classList.add('hidden');
+    document.getElementById('suggestions-naar').classList.add('hidden');
+    currentFocusIndex = -1;
+}
+
+function handleFocus(el) { if(el.value == "0") el.value = ""; el.select(); }
+function handleBlur(el) { if(el.value == "") el.value = "0"; }
+
+// AUTOCOMPLETE LOGICA
+function showSuggestions(input) {
+    const val = input.value.toLowerCase();
+    const id = input.id === 'c-van' ? 'suggestions-van' : 'suggestions-naar';
+    const suggCont = document.getElementById(id);
+    const otherId = input.id === 'c-van' ? 'suggestions-naar' : 'suggestions-van';
+    document.getElementById(otherId).classList.add('hidden');
+
+    if (!val) { suggCont.classList.add('hidden'); return; }
+    const matches = havens.filter(h => h.toLowerCase().startsWith(val));
     
-    function handleFocus(el) { if(el.value == "0") el.value = ""; el.select(); }
-    function handleBlur(el) { if(el.value == "") el.value = "0"; }
-
-    function showSuggestions(input) {
-        const val = input.value.toLowerCase();
-        const id = input.id === 'c-van' ? 'suggestions-van' : 'suggestions-naar';
-        const suggCont = document.getElementById(id);
-        const otherId = input.id === 'c-van' ? 'suggestions-naar' : 'suggestions-van';
-        document.getElementById(otherId).classList.add('hidden');
-
-        if (!val) { suggCont.classList.add('hidden'); return; }
-        const matches = havens.filter(h => h.toLowerCase().startsWith(val));
-        
-        if (matches.length > 0) {
-            currentFocusIndex = 0;
-            suggCont.innerHTML = matches.map((m, i) => `
-                <div class="suggestion-item ${i===0 ? 'selected' : ''}" data-index="${i}" onclick="selectSuggestion('${input.id}', '${m}')">
-                    ${m}
-                </div>
-            `).join('');
-            suggCont.classList.remove('hidden');
-        } else {
-            suggCont.classList.add('hidden');
-        }
-    }
-
-    function handleKeyNavigation(e, input) {
-        const id = input.id === 'c-van' ? 'suggestions-van' : 'suggestions-naar';
-        const container = document.getElementById(id);
-        const items = container.getElementsByClassName('suggestion-item');
-        if (container.classList.contains('hidden')) return;
-        if (e.key === "ArrowDown") {
-            e.preventDefault();
-            currentFocusIndex = (currentFocusIndex + 1) % items.length;
-            updateSelection(items);
-        } else if (e.key === "ArrowUp") {
-            e.preventDefault();
-            currentFocusIndex = (currentFocusIndex - 1 + items.length) % items.length;
-            updateSelection(items);
-        } else if (e.key === "Enter") {
-            if (currentFocusIndex > -1 && items[currentFocusIndex]) {
-                e.preventDefault();
-                selectSuggestion(input.id, items[currentFocusIndex].innerText.trim());
-            }
-        } else if (e.key === "Escape") {
-            hideSuggestions();
-        }
-    }
-
-    function updateSelection(items) {
-        for (let i = 0; i < items.length; i++) {
-            items[i].classList.remove('selected');
-            if (i === currentFocusIndex) items[i].classList.add('selected');
-        }
-    }
-
-    function selectSuggestion(inputId, value) {
-        document.getElementById(inputId).value = value;
-        hideSuggestions();
-    }
-
-    function step(id, v) { 
-        const i = document.getElementById(id); 
-        const cur = parseInt(i.value) || 0;
-        i.value = Math.max(0, cur + v); 
-    }
-
-    function setCurrentTime(dId, tId) {
-        const n = new Date();
-        document.getElementById(dId).value = n.toISOString().split('T')[0];
-        document.getElementById(tId).value = n.toTimeString().slice(0,5);
-    }
-
-    function saveSettings() {
-        const info = {
-            name: document.getElementById('ship-name').value,
-            eni: document.getElementById('ship-eni').value,
-            ton: document.getElementById('ship-ton').value,
-            tel: document.getElementById('ship-tel').value,
-            mail: document.getElementById('ship-mail').value,
-            bevracht: document.getElementById('ship-bevracht').value
-        };
-        localStorage.setItem('ship_info_v400', JSON.stringify(info));
-        updateShipDisplay(); closeModal('settings-modal');
-    }
-
-    function updateShipDisplay() {
-        const s = JSON.parse(localStorage.getItem('ship_info_v400') || '{}');
-        document.getElementById('active-ship-display').innerText = s.name ? `${s.name} (${s.eni || '?'})` : 'Gegevens invoeren...';
-        ['ship-name','ship-eni','ship-ton','ship-tel','ship-mail','ship-bevracht'].forEach(id => {
-            const key = id.replace('ship-', '');
-            document.getElementById(id).value = s[key] || '';
-        });
-    }
-
-    function selectTerminal(n) { 
-        currentTerminal = n; 
-        document.getElementById('term-label').innerText = n; 
-        document.getElementById('editing-terminal-index').value = "-1";
-        document.getElementById('terminal-confirm-btn').innerText = "Toevoegen";
-        ['load-full', 'load-empty', 'dis-full', 'dis-empty'].forEach(id => document.getElementById(id).value = "0");
-        closeModal('terminal-select-modal'); openModal('container-count-modal'); 
-    }
-
-    function editAddedTerminal(index) {
-        const t = tempTerminalList[index];
-        currentTerminal = t.name;
-        document.getElementById('term-label').innerText = t.name;
-        document.getElementById('editing-terminal-index').value = index;
-        document.getElementById('terminal-confirm-btn').innerText = "Bijwerken";
-        document.getElementById('load-full').value = t.lf;
-        document.getElementById('load-empty').value = t.le;
-        document.getElementById('dis-full').value = t.df;
-        document.getElementById('dis-empty').value = t.de;
-        openModal('container-count-modal');
-    }
-
-    function confirmTerminalData() {
-        const data = {
-            name: currentTerminal,
-            lf: parseInt(document.getElementById('load-full').value) || 0,
-            le: parseInt(document.getElementById('load-empty').value) || 0,
-            df: parseInt(document.getElementById('dis-full').value) || 0,
-            de: parseInt(document.getElementById('dis-empty').value) || 0
-        };
-        const editIdx = parseInt(document.getElementById('editing-terminal-index').value);
-        if(editIdx >= 0) tempTerminalList[editIdx] = data;
-        else tempTerminalList.push(data);
-        renderTerminalPreview(); closeModal('container-count-modal');
-    }
-
-    function renderTerminalPreview() {
-        const p = document.getElementById('terminal-preview');
-        p.innerHTML = tempTerminalList.map((t, i) => `
-            <span onclick="editAddedTerminal(${i})" class="bg-sky-500/20 text-sky-400 px-3 py-1 rounded-lg text-[10px] font-black border border-sky-500/30 uppercase cursor-pointer hover:bg-sky-500/40 transition-all active:scale-95">
-                ${t.name} <i class="fas fa-edit ml-1 opacity-50"></i>
-            </span>
+    if (matches.length > 0) {
+        currentFocusIndex = 0;
+        suggCont.innerHTML = matches.map((m, i) => `
+            <div class="suggestion-item ${i===0 ? 'selected' : ''}" data-index="${i}" onclick="selectSuggestion('${input.id}', '${m}')">
+                ${m}
+            </div>
         `).join('');
+        suggCont.classList.remove('hidden');
+    } else {
+        suggCont.classList.add('hidden');
     }
+}
 
-    function saveTrip() {
-        const r = {
-            code: document.getElementById('c-reiscode').value || 'D-' + Date.now().toString().slice(-3),
-            personen: document.getElementById('c-personen').value || '2',
-            van: document.getElementById('c-van').value || '?', naar: document.getElementById('c-naar').value || '?',
-            ad: document.getElementById('c-a-datum').value || '', at: document.getElementById('c-a-tijd').value || '',
-            vd: document.getElementById('c-v-datum').value || '', vt: document.getElementById('c-v-tijd').value || '',
-            terminals: [...tempTerminalList]
-        };
-        reizen.unshift(r); 
-        localStorage.setItem('du_reizen_v400', JSON.stringify(reizen));
-        tempTerminalList = []; document.getElementById('terminal-preview').innerHTML = '';
-        closeModal('trip-modal'); renderReizen();
+function handleKeyNavigation(e, input) {
+    const id = input.id === 'c-van' ? 'suggestions-van' : 'suggestions-naar';
+    const container = document.getElementById(id);
+    const items = container.getElementsByClassName('suggestion-item');
+    if (container.classList.contains('hidden')) return;
+    if (e.key === "ArrowDown") {
+        e.preventDefault();
+        currentFocusIndex = (currentFocusIndex + 1) % items.length;
+        updateSelection(items);
+    } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        currentFocusIndex = (currentFocusIndex - 1 + items.length) % items.length;
+        updateSelection(items);
+    } else if (e.key === "Enter") {
+        if (currentFocusIndex > -1 && items[currentFocusIndex]) {
+            e.preventDefault();
+            selectSuggestion(input.id, items[currentFocusIndex].innerText.trim());
+        }
+    } else if (e.key === "Escape") {
+        hideSuggestions();
     }
+}
 
-    function toggleTrip(index) {
-        expandedTripIndex = expandedTripIndex === index ? null : index;
-        renderReizen();
+function updateSelection(items) {
+    for (let i = 0; i < items.length; i++) {
+        items[i].classList.remove('selected');
+        if (i === currentFocusIndex) items[i].classList.add('selected');
     }
+}
 
-    function renderReizen() {
-        const lijst = document.getElementById('reizen-lijst');
-        lijst.innerHTML = reizen.map((r, i) => {
-            const isOpen = expandedTripIndex === i;
-            if (!isOpen) {
-                return `
-                <div onclick="toggleTrip(${i})" class="glass-card px-5 py-4 rounded-[2rem] border-l-[6px] border-l-sky-500 cursor-pointer hover:bg-sky-500/5 transition mb-4">
-                    <div class="text-[10px] font-black text-sky-400 uppercase">${r.van} > ${r.naar}</div>
-                    <div class="text-xl font-black italic text-white">${r.code}</div>
-                </div>`;
-            }
+function selectSuggestion(inputId, value) {
+    document.getElementById(inputId).value = value;
+    hideSuggestions();
+}
 
-            let terminalHtml = r.terminals.map(t => `
-                <div class="bg-slate-900 border border-white/5 rounded-[1.8rem] p-4">
-                    <span class="font-black text-white uppercase italic text-xs mb-3 block">Terminal ${t.name}</span>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="space-y-1">
-                            <div class="text-[7px] font-black text-red-500 uppercase px-1">Lossen</div>
-                            <div class="grid grid-cols-2 gap-1">
-                                <div class="bg-red-500/10 p-2 rounded-xl text-center border border-red-500/10">
-                                    <div class="text-[6px] text-white/40 uppercase">Vol</div>
-                                    <div class="text-sm font-black text-white">${t.df > 0 ? t.df : '-'}</div>
-                                </div>
-                                <div class="bg-red-500/5 p-2 rounded-xl text-center border border-red-500/5">
-                                    <div class="text-[6px] text-white/40 uppercase">Leeg</div>
-                                    <div class="text-sm font-black text-white">${t.de > 0 ? t.de : '-'}</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="space-y-1">
-                            <div class="text-[7px] font-black text-emerald-500 uppercase px-1">Laden</div>
-                            <div class="grid grid-cols-2 gap-1">
-                                <div class="bg-emerald-500/10 p-2 rounded-xl text-center border border-emerald-500/10">
-                                    <div class="text-[6px] text-white/40 uppercase">Vol</div>
-                                    <div class="text-sm font-black text-white">${t.lf > 0 ? t.lf : '-'}</div>
-                                </div>
-                                <div class="bg-emerald-500/5 p-2 rounded-xl text-center border border-emerald-500/5">
-                                    <div class="text-[6px] text-white/40 uppercase">Leeg</div>
-                                    <div class="text-sm font-black text-white">${t.le > 0 ? t.le : '-'}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`).join('');
+function step(id, v) { 
+    const i = document.getElementById(id); 
+    const cur = parseInt(i.value) || 0;
+    i.value = Math.max(0, cur + v); 
+}
 
+function setCurrentTime(dId, tId) {
+    const n = new Date();
+    document.getElementById(dId).value = n.toISOString().split('T')[0];
+    document.getElementById(tId).value = n.toTimeString().slice(0,5);
+}
+
+function saveSettings() {
+    const info = {
+        name: document.getElementById('ship-name').value,
+        eni: document.getElementById('ship-eni').value,
+        ton: document.getElementById('ship-ton').value,
+        tel: document.getElementById('ship-tel').value,
+        mail: document.getElementById('ship-mail').value,
+        bevracht: document.getElementById('ship-bevracht').value
+    };
+    localStorage.setItem('ship_info_v400', JSON.stringify(info));
+    updateShipDisplay(); closeModal('settings-modal');
+}
+
+function updateShipDisplay() {
+    const s = JSON.parse(localStorage.getItem('ship_info_v400') || '{}');
+    document.getElementById('active-ship-display').innerText = s.name ? `${s.name} (${s.eni || '?'})` : 'Gegevens invoeren...';
+    ['ship-name','ship-eni','ship-ton','ship-tel','ship-mail','ship-bevracht'].forEach(id => {
+        const key = id.replace('ship-', '');
+        document.getElementById(id).value = s[key] || '';
+    });
+}
+
+function selectTerminal(n) { 
+    currentTerminal = n; 
+    document.getElementById('term-label').innerText = n; 
+    document.getElementById('editing-terminal-index').value = "-1";
+    document.getElementById('terminal-confirm-btn').innerText = "Toevoegen";
+    ['load-full', 'load-empty', 'dis-full', 'dis-empty'].forEach(id => document.getElementById(id).value = "0");
+    closeModal('terminal-select-modal'); openModal('container-count-modal'); 
+}
+
+function editAddedTerminal(index) {
+    const t = tempTerminalList[index];
+    currentTerminal = t.name;
+    document.getElementById('term-label').innerText = t.name;
+    document.getElementById('editing-terminal-index').value = index;
+    document.getElementById('terminal-confirm-btn').innerText = "Bijwerken";
+    document.getElementById('load-full').value = t.lf;
+    document.getElementById('load-empty').value = t.le;
+    document.getElementById('dis-full').value = t.df;
+    document.getElementById('dis-empty').value = t.de;
+    openModal('container-count-modal');
+}
+
+function confirmTerminalData() {
+    const data = {
+        name: currentTerminal,
+        lf: parseInt(document.getElementById('load-full').value) || 0,
+        le: parseInt(document.getElementById('load-empty').value) || 0,
+        df: parseInt(document.getElementById('dis-full').value) || 0,
+        de: parseInt(document.getElementById('dis-empty').value) || 0
+    };
+    const editIdx = parseInt(document.getElementById('editing-terminal-index').value);
+    if(editIdx >= 0) tempTerminalList[editIdx] = data;
+    else tempTerminalList.push(data);
+    renderTerminalPreview(); closeModal('container-count-modal');
+}
+
+function renderTerminalPreview() {
+    const p = document.getElementById('terminal-preview');
+    p.innerHTML = tempTerminalList.map((t, i) => `
+        <span onclick="editAddedTerminal(${i})" class="bg-sky-500/20 text-sky-400 px-3 py-1 rounded-lg text-[10px] font-black border border-sky-500/30 uppercase cursor-pointer hover:bg-sky-500/40 transition-all active:scale-95">
+            ${t.name} <i class="fas fa-edit ml-1 opacity-50"></i>
+        </span>
+    `).join('');
+}
+
+function saveTrip() {
+    const r = {
+        code: document.getElementById('c-reiscode').value || 'D-' + Date.now().toString().slice(-3),
+        personen: document.getElementById('c-personen').value || '2',
+        van: document.getElementById('c-van').value || '?', naar: document.getElementById('c-naar').value || '?',
+        ad: document.getElementById('c-a-datum').value || '', at: document.getElementById('c-a-tijd').value || '',
+        vd: document.getElementById('c-v-datum').value || '', vt: document.getElementById('c-v-tijd').value || '',
+        terminals: [...tempTerminalList]
+    };
+    reizen.unshift(r); 
+    localStorage.setItem('du_reizen_v400', JSON.stringify(reizen));
+    tempTerminalList = []; document.getElementById('terminal-preview').innerHTML = '';
+    closeModal('trip-modal'); renderReizen();
+}
+
+function toggleTrip(index) {
+    expandedTripIndex = expandedTripIndex === index ? null : index;
+    renderReizen();
+}
+
+function renderReizen() {
+    const lijst = document.getElementById('reizen-lijst');
+    lijst.innerHTML = reizen.map((r, i) => {
+        const isOpen = expandedTripIndex === i;
+        if (!isOpen) {
             return `
-            <div class="glass-card p-6 rounded-[2.5rem] border-l-[8px] border-l-sky-500 shadow-2xl relative overflow-hidden mb-6">
-                <div class="flex justify-between items-start mb-6">
-                    <div onclick="toggleTrip(${i})" class="flex-1 cursor-pointer">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="px-3 py-1 bg-sky-500/10 text-sky-400 text-[10px] font-black uppercase rounded-full border border-sky-500/20">${r.van} > ${r.naar}</span>
-                            <span class="bg-white/5 px-3 py-1 rounded-full text-white/50 text-[10px] font-bold"><i class="fas fa-users mr-1 text-sky-400"></i>${r.personen}</span>
-                        </div>
-                        <h2 class="text-4xl font-black italic uppercase text-white tracking-tighter">${r.code}</h2>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="exportTrip(${i})" class="w-12 h-12 flex items-center justify-center bg-sky-500 rounded-2xl text-white shadow-lg active:scale-95 transition-all"><i class="fas fa-file-pdf text-lg"></i></button>
-                        <button onclick="deleteTrip(${i})" class="w-10 h-10 flex items-center justify-center text-white/20 hover:text-red-500 transition-colors"><i class="fas fa-trash-alt"></i></button>
-                        <button onclick="toggleTrip(${i})" class="w-10 h-10 flex items-center justify-center text-white/30 hover:text-white transition"><i class="fas fa-chevron-up"></i></button>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div onclick="openEditTime(${i}, 'ETA')" class="p-4 bg-slate-950/50 rounded-3xl border border-white/5 cursor-pointer">
-                        <span class="text-[9px] font-black text-sky-400 uppercase block mb-1">Ankunft (ETA)</span>
-                        <span class="text-2xl font-black block text-white">${r.at || '--:--'}</span>
-                        <span class="text-[11px] font-bold text-white/30 italic">${r.ad || '-'}</span>
-                    </div>
-                    <div onclick="openEditTime(${i}, 'ETD')" class="p-4 bg-slate-950/50 rounded-3xl border border-white/5 cursor-pointer">
-                        <span class="text-[9px] font-black text-violet-400 uppercase block mb-1">Abfahrt (ETD)</span>
-                        <span class="text-2xl font-black block text-white">${r.vt || '--:--'}</span>
-                        <span class="text-[11px] font-bold text-white/30 italic">${r.vd || '-'}</span>
-                    </div>
-                </div>
-                <div class="space-y-3">${terminalHtml}</div>
+            <div onclick="toggleTrip(${i})" class="glass-card px-5 py-4 rounded-[2rem] border-l-[6px] border-l-sky-500 cursor-pointer hover:bg-sky-500/5 transition mb-4">
+                <div class="text-[10px] font-black text-sky-400 uppercase">${r.van} > ${r.naar}</div>
+                <div class="text-xl font-black italic text-white">${r.code}</div>
             </div>`;
-        }).join('') || `<div class="text-center py-20 opacity-20 text-[10px] font-black uppercase tracking-widest">Keine Fahrten vorhanden</div>`;
-    }
+        }
 
-    async function exportTrip(index) {
-        const r = reizen[index], s = JSON.parse(localStorage.getItem('ship_info_v400') || '{}');
-        const { jsPDF } = window.jspdf; 
-        const doc = new jsPDF();
-        
-        doc.setFillColor(2, 6, 23); doc.rect(0, 0, 210, 45, 'F');
-        doc.setTextColor(56, 189, 248); doc.setFontSize(28); doc.setFont("helvetica", "bold"); 
-        doc.text("DUISBURG Hafenmeister", 15, 25);
-        doc.setTextColor(255); doc.setFontSize(9); doc.setFont("helvetica", "normal");
-        doc.text("OFFIZIELLE HAFENDEKLARATION / MANIFEST", 15, 33);
-        doc.setFillColor(30, 41, 59); doc.roundedRect(145, 12, 50, 22, 3, 3, 'F');
-        doc.setTextColor(56, 189, 248); doc.setFontSize(8); doc.text("REISECODE", 150, 20);
-        doc.setTextColor(255); doc.setFontSize(14); doc.text(r.code, 150, 28);
-        doc.setTextColor(15, 23, 42); doc.setFontSize(11); doc.setFont("helvetica", "bold");
-        doc.text("SCHIFFS- UND REISEINFORMATIONEN", 15, 58);
-        doc.setFontSize(9); doc.setTextColor(100, 116, 139); doc.text("SCHIFFSGEGEVENS", 15, 65);
-        doc.setTextColor(15, 23, 42); doc.text([`Naam: ${s.name || '-'}`,`ENI: ${s.eni || '-'}`,`Tonnage: ${s.ton || '-'} t`,`Bevrachter: ${s.bevracht || '-'}`,`Tel: ${s.tel || '-'}`,`Mail: ${s.mail || '-'}`], 15, 72, { lineHeightFactor: 1.5 });
-        doc.setTextColor(100, 116, 139); doc.text("REISEVERLAUF", 110, 65);
-        doc.setTextColor(15, 23, 42); doc.text([`Route: ${r.van} > ${r.naar}`,`Personen: ${r.personen}`,`Ankunft: ${r.ad} ${r.at}`,`Abfahrt: ${r.vd} ${r.vt}`], 110, 72, { lineHeightFactor: 1.5 });
-        doc.line(15, 99, 195, 99);
-        doc.text("LADUNGSÜBERSICHT PRO TERMINAL", 15, 105);
+        let terminalHtml = r.terminals.map(t => `
+            <div class="bg-slate-900 border border-white/5 rounded-[1.8rem] p-4">
+                <span class="font-black text-white uppercase italic text-xs mb-3 block">Terminal ${t.name}</span>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <div class="text-[7px] font-black text-red-500 uppercase px-1">Lossen</div>
+                        <div class="grid grid-cols-2 gap-1">
+                            <div class="bg-red-500/10 p-2 rounded-xl text-center border border-red-500/10">
+                                <div class="text-[6px] text-white/40 uppercase">Vol</div>
+                                <div class="text-sm font-black text-white">${t.df > 0 ? t.df : '-'}</div>
+                            </div>
+                            <div class="bg-red-500/5 p-2 rounded-xl text-center border border-red-500/5">
+                                <div class="text-[6px] text-white/40 uppercase">Leeg</div>
+                                <div class="text-sm font-black text-white">${t.de > 0 ? t.de : '-'}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="text-[7px] font-black text-emerald-500 uppercase px-1">Laden</div>
+                        <div class="grid grid-cols-2 gap-1">
+                            <div class="bg-emerald-500/10 p-2 rounded-xl text-center border border-emerald-500/10">
+                                <div class="text-[6px] text-white/40 uppercase">Vol</div>
+                                <div class="text-sm font-black text-white">${t.lf > 0 ? t.lf : '-'}</div>
+                            </div>
+                            <div class="bg-emerald-500/5 p-2 rounded-xl text-center border border-emerald-500/5">
+                                <div class="text-[6px] text-white/40 uppercase">Leeg</div>
+                                <div class="text-sm font-black text-white">${t.le > 0 ? t.le : '-'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`).join('');
 
-        const bodyData = r.terminals.map(t => [
-            {content: t.name, styles: {fontStyle: 'bold', textColor: [2, 132, 199]}},
-            t.lf > 0 ? t.lf : '', t.le > 0 ? t.le : '', t.df > 0 ? t.df : '', t.de > 0 ? t.de : ''
-        ]);
+        return `
+        <div class="glass-card p-6 rounded-[2.5rem] border-l-[8px] border-l-sky-500 shadow-2xl relative overflow-hidden mb-6">
+            <div class="flex justify-between items-start mb-6">
+                <div onclick="toggleTrip(${i})" class="flex-1 cursor-pointer">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="px-3 py-1 bg-sky-500/10 text-sky-400 text-[10px] font-black uppercase rounded-full border border-sky-500/20">${r.van} > ${r.naar}</span>
+                        <span class="bg-white/5 px-3 py-1 rounded-full text-white/50 text-[10px] font-bold"><i class="fas fa-users mr-1 text-sky-400"></i>${r.personen}</span>
+                    </div>
+                    <h2 class="text-4xl font-black italic uppercase text-white tracking-tighter">${r.code}</h2>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="exportTrip(${i})" class="w-12 h-12 flex items-center justify-center bg-sky-500 rounded-2xl text-white shadow-lg active:scale-95 transition-all"><i class="fas fa-file-pdf text-lg"></i></button>
+                    <button onclick="deleteTrip(${i})" class="w-10 h-10 flex items-center justify-center text-white/20 hover:text-red-500 transition-colors"><i class="fas fa-trash-alt"></i></button>
+                    <button onclick="toggleTrip(${i})" class="w-10 h-10 flex items-center justify-center text-white/30 hover:text-white transition"><i class="fas fa-chevron-up"></i></button>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div onclick="openEditTime(${i}, 'ETA')" class="p-4 bg-slate-950/50 rounded-3xl border border-white/5 cursor-pointer">
+                    <span class="text-[9px] font-black text-sky-400 uppercase block mb-1">Ankunft (ETA)</span>
+                    <span class="text-2xl font-black block text-white">${r.at || '--:--'}</span>
+                    <span class="text-[11px] font-bold text-white/30 italic">${r.ad || '-'}</span>
+                </div>
+                <div onclick="openEditTime(${i}, 'ETD')" class="p-4 bg-slate-950/50 rounded-3xl border border-white/5 cursor-pointer">
+                    <span class="text-[9px] font-black text-violet-400 uppercase block mb-1">Abfahrt (ETD)</span>
+                    <span class="text-2xl font-black block text-white">${r.vt || '--:--'}</span>
+                    <span class="text-[11px] font-bold text-white/30 italic">${r.vd || '-'}</span>
+                </div>
+            </div>
+            <div class="space-y-3">${terminalHtml}</div>
+        </div>`;
+    }).join('') || `<div class="text-center py-20 opacity-20 text-[10px] font-black uppercase tracking-widest">Keine Fahrten vorhanden</div>`;
+}
 
-        doc.autoTable({
-            startY: 110,
-            head: [['TERMINAL', 'LADEN (Voll)', 'LADEN (Leer)', 'LÖSCHEN (Voll)', 'LÖSCHEN (Leer)']],
-            body: bodyData,
-            theme: 'striped',
-            headStyles: { fillColor: [15, 23, 42], halign: 'center', fontSize: 8, cellPadding: 4 },
-            columnStyles: { 0: { cellWidth: 45 }, 1: { halign: 'center', fontStyle: 'bold', textColor: [5, 150, 105] }, 2: { halign: 'center', textColor: [16, 185, 129] }, 3: { halign: 'center', fontStyle: 'bold', textColor: [220, 38, 38] }, 4: { halign: 'center', textColor: [239, 68, 68] } },
-            styles: { fontSize: 10, cellPadding: 5, valign: 'middle' }
-        });
-
-        const pdfBlobUrl = doc.output('bloburl');
-        document.getElementById('pdf-frame').src = pdfBlobUrl;
-        document.getElementById('pdf-download-btn').onclick = () => doc.save(`Duisburg_${r.code}.pdf`);
-        document.getElementById('pdf-email-btn').onclick = () => {
-            const pdfBase64 = doc.output('datauristring').split(',')[1];
-            const eml = `To: anmeldung@duisport.de\nSubject: Hafendeklaration: ${s.name} - ${r.code}\nX-Unsent: 1\nContent-Type: multipart/mixed; boundary="sep"\n\n--sep\nContent-Type: text/plain; charset=utf-8\n\nSehr geehrte Damen und Herren,\n\nanbei erhalten Sie die Hafendeklaration für das Schiff ${s.name}.\n\nMit freundlichen Grüßen,\nKapitän ${s.name}\n\n--sep\nContent-Type: application/pdf; name="Duisburg_${r.code}.pdf"\nContent-Transfer-Encoding: base64\nContent-Disposition: attachment; filename="Duisburg_${r.code}.pdf"\n\n${pdfBase64}\n--sep--`;
-            const blob = new Blob([eml], { type: 'message/rfc822' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `Mail_Duisburg_${r.code}.eml`;
-            a.click();
-        };
-        openModal('pdf-modal');
-    }
-
-    function openEditTime(i, t) {
-        const r = reizen[i]; document.getElementById('edit-index').value = i; document.getElementById('edit-type').value = t;
-        if(t === 'ETA') { document.getElementById('edit-date').value = r.ad; document.getElementById('edit-time').value = r.at; }
-        else { document.getElementById('edit-date').value = r.vd; document.getElementById('edit-time').value = r.vt; }
-        openModal('edit-time-modal');
-    }
-
-    function updateTripTime() {
-        const idx = document.getElementById('edit-index').value;
-        const t = document.getElementById('edit-type').value;
-        if(t === 'ETA') { reizen[idx].ad = document.getElementById('edit-date').value; reizen[idx].at = document.getElementById('edit-time').value; }
-        else { reizen[idx].vd = document.getElementById('edit-date').value; reizen[idx].vt = document.getElementById('edit-time').value; }
-        localStorage.setItem('du_reizen_v400', JSON.stringify(reizen)); renderReizen(); closeModal('edit-time-modal');
-    }
-
-    function deleteTrip(i) { if(confirm('Reis verwijderen?')) { reizen.splice(i,1); localStorage.setItem('du_reizen_v400', JSON.stringify(reizen)); renderReizen(); } }
+async function exportTrip(index) {
+    const r = reizen[index], s = JSON.parse(localStorage.getItem('ship_info_v400') || '{}');
+    const { jsPDF } = window.jspdf; 
+    const doc = new jsPDF();
     
-    window.onload = () => { updateShipDisplay(); renderReizen(); };
+    doc.setFillColor(2, 6, 23); doc.rect(0, 0, 210, 45, 'F');
+    doc.setTextColor(56, 189, 248); doc.setFontSize(28); doc.setFont("helvetica", "bold"); 
+    doc.text("DUISBURG Hafenmeister", 15, 25);
+    doc.setTextColor(255); doc.setFontSize(9); doc.setFont("helvetica", "normal");
+    doc.text("OFFIZIELLE HAFENDEKLARATION / MANIFEST", 15, 33);
+    doc.setFillColor(30, 41, 59); doc.roundedRect(145, 12, 50, 22, 3, 3, 'F');
+    doc.setTextColor(56, 189, 248); doc.setFontSize(8); doc.text("REISECODE", 150, 20);
+    doc.setTextColor(255); doc.setFontSize(14); doc.text(r.code, 150, 28);
+    doc.setTextColor(15, 23, 42); doc.setFontSize(11); doc.setFont("helvetica", "bold");
+    doc.text("SCHIFFS- UND REISEINFORMATIONEN", 15, 58);
+    doc.setFontSize(9); doc.setTextColor(100, 116, 139); doc.text("SCHIFFSGEGEVENS", 15, 65);
+    doc.setTextColor(15, 23, 42); doc.text([`Naam: ${s.name || '-'}`,`ENI: ${s.eni || '-'}`,`Tonnage: ${s.ton || '-'} t`,`Bevrachter: ${s.bevracht || '-'}`,`Tel: ${s.tel || '-'}`,`Mail: ${s.mail || '-'}`], 15, 72, { lineHeightFactor: 1.5 });
+    doc.setTextColor(100, 116, 139); doc.text("REISEVERLAUF", 110, 65);
+    doc.setTextColor(15, 23, 42); doc.text([`Route: ${r.van} > ${r.naar}`,`Personen: ${r.personen}`,`Ankunft: ${r.ad} ${r.at}`,`Abfahrt: ${r.vd} ${r.vt}`], 110, 72, { lineHeightFactor: 1.5 });
+    doc.line(15, 99, 195, 99);
+    doc.text("LADUNGSÜBERSICHT PRO TERMINAL", 15, 105);
+
+    const bodyData = r.terminals.map(t => [
+        {content: t.name, styles: {fontStyle: 'bold', textColor: [2, 132, 199]}},
+        t.lf > 0 ? t.lf : '', t.le > 0 ? t.le : '', t.df > 0 ? t.df : '', t.de > 0 ? t.de : ''
+    ]);
+
+    doc.autoTable({
+        startY: 110,
+        head: [['TERMINAL', 'LADEN (Voll)', 'LADEN (Leer)', 'LÖSCHEN (Voll)', 'LÖSCHEN (Leer)']],
+        body: bodyData,
+        theme: 'striped',
+        headStyles: { fillColor: [15, 23, 42], halign: 'center', fontSize: 8, cellPadding: 4 },
+        columnStyles: { 0: { cellWidth: 45 }, 1: { halign: 'center', fontStyle: 'bold', textColor: [5, 150, 105] }, 2: { halign: 'center', textColor: [16, 185, 129] }, 3: { halign: 'center', fontStyle: 'bold', textColor: [220, 38, 38] }, 4: { halign: 'center', textColor: [239, 68, 68] } },
+        styles: { fontSize: 10, cellPadding: 5, valign: 'middle' }
+    });
+
+    const pdfBlobUrl = doc.output('bloburl');
+    document.getElementById('pdf-frame').src = pdfBlobUrl;
+
+    document.getElementById('pdf-download-btn').onclick = () => doc.save(`Duisburg_${r.code}.pdf`);
+
+    document.getElementById('pdf-email-btn').onclick = () => {
+        const pdfBase64 = doc.output('datauristring').split(',')[1];
+        const eml = `To: anmeldung@duisport.de
+Subject: Hafendeklaration: ${s.name} - ${r.code}
+X-Unsent: 1
+Content-Type: multipart/mixed; boundary="sep"
+
+--sep
+Content-Type: text/plain; charset=utf-8
+
+Sehr geehrte Damen und Herren,
+
+anbei erhalten Sie die Hafendeklaration für das Schiff ${s.name}.
+
+Mit freundlichen Grüßen,
+Kapitän ${s.name}
+
+--sep
+Content-Type: application/pdf; name="Duisburg_${r.code}.pdf"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="Duisburg_${r.code}.pdf"
+
+${pdfBase64}
+--sep--`;
+
+        const blob = new Blob([eml], { type: 'message/rfc822' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Mail_Duisburg_${r.code}.eml`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+    openModal('pdf-modal');
+}
+
+function openEditTime(i, t) {
+    const r = reizen[i]; document.getElementById('edit-index').value = i; document.getElementById('edit-type').value = t;
+    if(t === 'ETA') { document.getElementById('edit-date').value = r.ad; document.getElementById('edit-time').value = r.at; }
+    else { document.getElementById('edit-date').value = r.vd; document.getElementById('edit-time').value = r.vt; }
+    openModal('edit-time-modal');
+}
+
+function updateTripTime() {
+    const idx = document.getElementById('edit-index').value;
+    const t = document.getElementById('edit-type').value;
+    if(t === 'ETA') { reizen[idx].ad = document.getElementById('edit-date').value; reizen[idx].at = document.getElementById('edit-time').value; }
+    else { reizen[idx].vd = document.getElementById('edit-date').value; reizen[idx].vt = document.getElementById('edit-time').value; }
+    localStorage.setItem('du_reizen_v400', JSON.stringify(reizen)); renderReizen(); closeModal('edit-time-modal');
+}
+
+function deleteTrip(i) { if(confirm('Reis verwijderen?')) { reizen.splice(i,1); localStorage.setItem('du_reizen_v400', JSON.stringify(reizen)); renderReizen(); } }
+
+window.onload = () => { updateShipDisplay(); renderReizen(); };
 </script>
 </body>
 </html>
