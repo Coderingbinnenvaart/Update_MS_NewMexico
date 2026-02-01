@@ -360,19 +360,43 @@
 </div>
     </main>
 <div id="ship-modal" class="fixed inset-0 z-[3000] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-    <div class="bg-slate-900 border-2 border-blue-500 rounded-3xl max-w-5xl w-full shadow-[0_0_50px_rgba(59,130,246,0.3)] overflow-hidden">
+    <div class="relative bg-slate-900 border-2 border-blue-500 rounded-3xl max-w-5xl w-full shadow-[0_0_50px_rgba(59,130,246,0.3)] overflow-hidden">
         
         <div class="p-4 border-b border-blue-900/50 flex justify-between items-center bg-blue-950/30">
             <div>
                 <h3 class="text-xl font-black tracking-widest text-white uppercase italic">MS NEW MEXICO</h3>
                 <p class="text-[0.6rem] text-blue-400 font-bold uppercase tracking-widest">Scheepsgegevens & Tonnage</p>
             </div>
-            <button onclick="toggleModal()" class="text-slate-400 hover:text-white transition-colors p-1 bg-white/5 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
+            
+            <div class="flex items-center gap-3">
+                <button onclick="toggleWifiQR()" class="flex items-center gap-2 bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/50 text-blue-400 px-3 py-1.5 rounded-xl transition-all group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                    </svg>
+                    <span class="text-[0.7rem] font-black uppercase tracking-wider">Wifi Scannen</span>
+                </button>
+
+                <button onclick="toggleModal()" class="text-slate-400 hover:text-white transition-colors p-1 bg-white/5 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
         </div>
+
+        <div id="wifi-overlay" class="hidden absolute inset-0 z-[3001] bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center">
+            <h2 class="text-blue-400 text-xl font-black uppercase tracking-[5px] mb-2">Wifi Verbinding</h4>
+            <p class="text-slate-400 text-sm mb-8 font-bold">Scan de code om verbinding te maken met het netwerk</p>
+            
+            <div class="relative p-4 bg-white rounded-3xl shadow-[0_0_30px_rgba(59,130,246,0.5)]">
+                <img src="pic/wifi-qr.png" alt="Wifi QR Code" class="w-80 h-80 object-contain">
+            </div>
+
+            <button onclick="toggleWifiQR()" class="mt-12 bg-red-600/20 hover:bg-red-600/40 border border-red-500/50 text-red-400 px-8 py-3 rounded-2xl font-black uppercase tracking-widest transition-all">
+                Terug naar gegevens
+            </button>
+            </div>
+
         
         <div class="flex flex-col md:flex-row h-[75vh]">
             
@@ -550,7 +574,7 @@
 
     <script>
 // STEL JE HUIDIGE VERSIE HIER IN
-        const currentVersion = "1.1.1"; 
+        const currentVersion = "1.1.2"; 
 const githubUrl = "https://raw.githubusercontent.com/Coderingbinnenvaart/Update_MS_NewMexico/refs/heads/main/index.html";
 
 async function checkForUpdates() {
@@ -597,6 +621,10 @@ window.addEventListener('load', () => {
     // Kijk daarna elke 30 minuten automatisch of er een update is
     setInterval(checkForUpdates, 1800000); 
 });
+function toggleWifiQR() {
+    const wifiOverlay = document.getElementById('wifi-overlay');
+    wifiOverlay.classList.toggle('hidden');
+}
         const stations = [
             { id: 1, name: "Hoek van Holland", url: "https://waterinfo.rws.nl/publiek/waterhoogte/Hoek-van-Holland%28HOEK%29/details", top: "-200px", left: "-15%", width: "130%" },
             { id: 2, name: "Dordrecht", url: "https://waterinfo.rws.nl/publiek/waterhoogte/Dordrecht%28DORD%29/details", top: "-200px", left: "-15%", width: "130%" },
