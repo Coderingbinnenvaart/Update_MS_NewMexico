@@ -506,7 +506,7 @@ async function exportTrip(index) {
     doc.setTextColor(255); doc.setFontSize(14); doc.text(r.code, 150, 28);
     doc.setTextColor(15, 23, 42); doc.setFontSize(11); doc.setFont("helvetica", "bold");
     doc.text("SCHIFFS- UND REISEINFORMATIONEN", 15, 58);
-    doc.setFontSize(9); doc.setTextColor(100, 116, 139); doc.text("SCHIFFSGEGEVENS", 15, 65);
+    doc.setFontSize(9); doc.setTextColor(100, 116, 139); doc.text("SCHIFFDATEN", 15, 65);
     doc.setTextColor(15, 23, 42); doc.text([`Naam: ${s.name || '-'}`,`ENI: ${s.eni || '-'}`,`Tonnage: ${s.ton || '-'} t`,`Bevrachter: ${s.bevracht || '-'}`,`Tel: ${s.tel || '-'}`,`Mail: ${s.mail || '-'}`], 15, 72, { lineHeightFactor: 1.5 });
     doc.setTextColor(100, 116, 139); doc.text("REISEVERLAUF", 110, 65);
     doc.setTextColor(15, 23, 42); doc.text([`Route: ${r.van} > ${r.naar}`,`Personen: ${r.personen}`,`Ankunft: ${r.ad} ${r.at}`,`Abfahrt: ${r.vd} ${r.vt}`], 110, 72, { lineHeightFactor: 1.5 });
@@ -590,4 +590,5 @@ window.onload = () => { updateShipDisplay(); renderReizen(); };
 </script>
 </body>
 </html>
+
 
