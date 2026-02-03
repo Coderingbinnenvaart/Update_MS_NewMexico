@@ -620,8 +620,13 @@ loadWaterstandData(waterstandDataDE, waterstandDataNL);
                         if (sectionId === 'de') {
                             updateMarkeAlarmList();
                         }
+
                     }
                 });
+// Wanneer je in het vakje klikt, wordt de tekst geselecteerd/leeggemaakt
+inputElement.addEventListener('focus', (e) => {
+    e.target.value = ''; 
+});
 
                 waterstandElement.addEventListener('click', (e) => {
                     e.stopPropagation(); 
