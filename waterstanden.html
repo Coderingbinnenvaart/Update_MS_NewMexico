@@ -410,6 +410,11 @@ function loadShipHeight(shipHeightInputGlobal) {
         // DATA DEFINITIE - KRITISCHE HOGER WATER STANDEN (CM)
         // ====================================================================
         let waterstandDataDE = [
+       
+            { id: 'kob', name: 'Koblenz', level: 0, ref: 0.00, currentLevel: 0.00, listId: 'de', markeI_cm: 460, markeII_cm: 640 },
+            { id: 'bon', name: 'Bonn', level: 0, ref: 0.00, currentLevel: 0.00, listId: 'de', markeI_cm: 800000, markeII_cm: 9000000 },
+            { id: 'kol', name: 'Koln', level: 0, ref: 0.00, currentLevel: 0.00, listId: 'de', markeI_cm: 620, markeII_cm: 830 },
+ 
             { id: 'dus', name: 'Dusseldorf', level: 0, ref: 0.00, currentLevel: 0.00, listId: 'de', markeI_cm: 710, markeII_cm: 880 },
             { id: 'rur', name: 'Ruhrort', level: 0, ref: 0.00, currentLevel: 0.00, listId: 'de', markeI_cm: 930, markeII_cm: 1130 },
             { id: 'wes', name: 'Wesel', level: 0, ref: 0.00, currentLevel: 0.00, listId: 'de', markeI_cm: 870, markeII_cm: 1060 },
@@ -417,6 +422,11 @@ function loadShipHeight(shipHeightInputGlobal) {
         ];
         
         let allBridgeDataDE = [
+           
+            { id: 'koblenz_1', name: 'Koblenz', refDvh: 13.60, refWaterLevel: 0.00, locationId: 'kob', listId: 'de' },
+            { id: 'weissenturm', name: 'Weissenturm', refDvh: 13.60, refWaterLevel: 0.00, locationId: 'kob', listId: 'de' },
+            { id: 'bonn', name: 'Bonn', refDvh: 16.80, refWaterLevel: 0.00, locationId: 'bon', listId: 'de' },
+       	    { id: 'leverkusen', name: 'Leverkusen', refDvh: 17.31, refWaterLevel: 0.00, locationId: 'kol', listId: 'de' },
             { id: 'neuss', name: 'Neuss-Hamm Br.', refDvh: 17.41, refWaterLevel: 0.00, locationId: 'dus', listId: 'de' },
             { id: 'knie', name: 'Kniebrucke (Duss.)', refDvh: 17.62, refWaterLevel: 0.00, locationId: 'dus', listId: 'de' },
             { id: 'krefeld', name: 'Krefeld', refDvh: 20.18, refWaterLevel: 0.00, locationId: 'rur', listId: 'de' },
@@ -620,13 +630,8 @@ loadWaterstandData(waterstandDataDE, waterstandDataNL);
                         if (sectionId === 'de') {
                             updateMarkeAlarmList();
                         }
-
                     }
                 });
-// Wanneer je in het vakje klikt, wordt de tekst geselecteerd/leeggemaakt
-inputElement.addEventListener('focus', (e) => {
-    e.target.value = ''; 
-});
 
                 waterstandElement.addEventListener('click', (e) => {
                     e.stopPropagation(); 
@@ -692,7 +697,6 @@ inputElement.addEventListener('focus', (e) => {
 </script>
 </body>
 </html>
-
 
 
 
