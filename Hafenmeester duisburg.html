@@ -29,7 +29,6 @@
         input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
 
-        /* Suggestie lijst styling */
         .autocomplete-suggestions {
             position: absolute;
             background: #1e293b;
@@ -69,9 +68,6 @@
         </div>
         <div class="flex items-center gap-2">
             <button onclick="openModal('trip-modal')" class="btn-gradient px-5 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-widest text-white shadow-lg shadow-sky-500/20">+ Reis</button>
-            <button onclick="openModal('settings-modal')" class="w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 border border-white/10">
-                <i class="fas fa-cog text-slate-300"></i>
-            </button>
         </div>
     </header>
 
@@ -201,22 +197,6 @@
         </div>
     </div>
 
-    <div id="settings-modal" class="modal-overlay p-4">
-        <div class="bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-7 border border-white/10 shadow-2xl">
-            <h2 class="text-xl font-black mb-6 uppercase text-sky-400 italic">Instellingen</h2>
-            <div class="space-y-4 text-white">
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] font-black text-white/30 uppercase block mb-1">Naam Schip</label><input type="text" id="ship-name" class="w-full bg-transparent font-bold text-lg outline-none"></div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] font-black text-white/30 uppercase block mb-1">ENI Nummer</label><input type="text" id="ship-eni" class="w-full bg-transparent font-bold text-lg outline-none"></div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] font-black text-white/30 uppercase block mb-1">Tonnage</label><input type="text" id="ship-ton" class="w-full bg-transparent font-bold text-lg outline-none"></div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] font-black text-white/30 uppercase block mb-1">Telefoon</label><input type="text" id="ship-tel" class="w-full bg-transparent font-bold text-lg outline-none"></div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] font-black text-white/30 uppercase block mb-1">Email</label><input type="text" id="ship-mail" class="w-full bg-transparent font-bold text-lg outline-none"></div>
-                <div class="bg-slate-950 p-3 rounded-xl border border-white/5"><label class="text-[9px] font-black text-white/30 uppercase block mb-1">Bevrachter</label><input type="text" id="ship-bevracht" class="w-full bg-transparent font-bold text-lg outline-none"></div>
-            </div>
-            <button onclick="saveSettings()" class="w-full mt-8 py-5 btn-gradient rounded-xl font-black uppercase text-white shadow-xl">Opslaan</button>
-            <button onclick="closeModal('settings-modal')" class="w-full mt-4 text-xs uppercase opacity-40 text-center font-bold text-white">Terug</button>
-        </div>
-    </div>
-
     <div id="edit-time-modal" class="modal-overlay p-4">
         <div class="bg-slate-900 w-full max-w-xs rounded-[2.5rem] p-6 border border-white/10 shadow-2xl">
             <div class="flex justify-between items-center mb-4">
@@ -234,10 +214,20 @@
     </div>
 
 <script>
-let currentTerminal = "", tempTerminalList = [], reizen = JSON.parse(localStorage.getItem('du_reizen_v400') || '[]');
-let expandedTripIndex = 0; // nieuwste reis standaard open
+// --- VASTE SCHEEPSGEGEVENS ---
+const SHIP_INFO = {
+    name: "New Mexico",
+    eni: "01234567",
+    ton: "2500",
+    tel: "06-12345678",
+    mail: "info@schip.nl",
+    bevracht: "BEVRACHTER NAAM"
+};
 
-const havens = ["Rotterdam", "Amsterdam", "Antwerpen", "Duisburg", "Dusseldorf", "Neuss", "Leverkusen", "Koln"];
+let currentTerminal = "", tempTerminalList = [], reizen = JSON.parse(localStorage.getItem('du_reizen_v400') || '[]');
+let expandedTripIndex = 0;
+
+const havens = ["Rotterdam", "Amsterdam", "Antwerpen", "Duisburg", "Dusseldorf", "Neuss", "Leverkusen", "Koln", "Bonn", "Koblenz"];
 let currentFocusIndex = -1;
 
 function openModal(id) { document.getElementById(id).classList.add('active'); }
@@ -255,7 +245,6 @@ function hideSuggestions() {
 function handleFocus(el) { if(el.value == "0") el.value = ""; el.select(); }
 function handleBlur(el) { if(el.value == "") el.value = "0"; }
 
-// AUTOCOMPLETE LOGICA
 function showSuggestions(input) {
     const val = input.value.toLowerCase();
     const id = input.id === 'c-van' ? 'suggestions-van' : 'suggestions-naar';
@@ -326,26 +315,8 @@ function setCurrentTime(dId, tId) {
     document.getElementById(tId).value = n.toTimeString().slice(0,5);
 }
 
-function saveSettings() {
-    const info = {
-        name: document.getElementById('ship-name').value,
-        eni: document.getElementById('ship-eni').value,
-        ton: document.getElementById('ship-ton').value,
-        tel: document.getElementById('ship-tel').value,
-        mail: document.getElementById('ship-mail').value,
-        bevracht: document.getElementById('ship-bevracht').value
-    };
-    localStorage.setItem('ship_info_v400', JSON.stringify(info));
-    updateShipDisplay(); closeModal('settings-modal');
-}
-
 function updateShipDisplay() {
-    const s = JSON.parse(localStorage.getItem('ship_info_v400') || '{}');
-    document.getElementById('active-ship-display').innerText = s.name ? `${s.name} (${s.eni || '?'})` : 'Gegevens invoeren...';
-    ['ship-name','ship-eni','ship-ton','ship-tel','ship-mail','ship-bevracht'].forEach(id => {
-        const key = id.replace('ship-', '');
-        document.getElementById(id).value = s[key] || '';
-    });
+    document.getElementById('active-ship-display').innerText = `${SHIP_INFO.name} (${SHIP_INFO.eni})`;
 }
 
 function selectTerminal(n) { 
@@ -400,7 +371,8 @@ function saveTrip() {
         van: document.getElementById('c-van').value || '?', naar: document.getElementById('c-naar').value || '?',
         ad: document.getElementById('c-a-datum').value || '', at: document.getElementById('c-a-tijd').value || '',
         vd: document.getElementById('c-v-datum').value || '', vt: document.getElementById('c-v-tijd').value || '',
-        terminals: [...tempTerminalList]
+        terminals: [...tempTerminalList],
+        sent: false
     };
     reizen.unshift(r); 
     localStorage.setItem('du_reizen_v400', JSON.stringify(reizen));
@@ -417,10 +389,15 @@ function renderReizen() {
     const lijst = document.getElementById('reizen-lijst');
     lijst.innerHTML = reizen.map((r, i) => {
         const isOpen = expandedTripIndex === i;
+        const borderClass = r.sent ? 'border-l-emerald-500' : 'border-l-sky-500';
+        const badgeHTML = r.sent ? '<span class="ml-2 px-2 py-0.5 bg-emerald-500 text-white text-[8px] font-black rounded uppercase tracking-widest"><i class="fas fa-check mr-1"></i>Verzonden</span>' : '';
+        const textClass = r.sent ? 'text-emerald-400' : 'text-sky-400';
+        const bgClass = r.sent ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-sky-500/10 border-sky-500/20';
+
         if (!isOpen) {
             return `
-            <div onclick="toggleTrip(${i})" class="glass-card px-5 py-4 rounded-[2rem] border-l-[6px] border-l-sky-500 cursor-pointer hover:bg-sky-500/5 transition mb-4">
-                <div class="text-[10px] font-black text-sky-400 uppercase">${r.van} > ${r.naar}</div>
+            <div onclick="toggleTrip(${i})" class="glass-card px-5 py-4 rounded-[2rem] border-l-[6px] ${borderClass} cursor-pointer hover:bg-sky-500/5 transition mb-4">
+                <div class="flex items-center text-[10px] font-black ${textClass} uppercase">${r.van} > ${r.naar} ${badgeHTML}</div>
                 <div class="text-xl font-black italic text-white">${r.code}</div>
             </div>`;
         }
@@ -459,12 +436,13 @@ function renderReizen() {
             </div>`).join('');
 
         return `
-        <div class="glass-card p-6 rounded-[2.5rem] border-l-[8px] border-l-sky-500 shadow-2xl relative overflow-hidden mb-6">
+        <div class="glass-card p-6 rounded-[2.5rem] border-l-[8px] ${borderClass} shadow-2xl relative overflow-hidden mb-6">
             <div class="flex justify-between items-start mb-6">
                 <div onclick="toggleTrip(${i})" class="flex-1 cursor-pointer">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="px-3 py-1 bg-sky-500/10 text-sky-400 text-[10px] font-black uppercase rounded-full border border-sky-500/20">${r.van} > ${r.naar}</span>
+                    <div class="flex items-center gap-2 mb-2 flex-wrap">
+                        <span class="px-3 py-1 ${bgClass} ${textClass} text-[10px] font-black uppercase rounded-full border">${r.van} > ${r.naar}</span>
                         <span class="bg-white/5 px-3 py-1 rounded-full text-white/50 text-[10px] font-bold"><i class="fas fa-users mr-1 text-sky-400"></i>${r.personen}</span>
+                        ${badgeHTML}
                     </div>
                     <h2 class="text-4xl font-black italic uppercase text-white tracking-tighter">${r.code}</h2>
                 </div>
@@ -492,7 +470,8 @@ function renderReizen() {
 }
 
 async function exportTrip(index) {
-    const r = reizen[index], s = JSON.parse(localStorage.getItem('ship_info_v400') || '{}');
+    const r = reizen[index];
+    const s = SHIP_INFO;
     const { jsPDF } = window.jspdf; 
     const doc = new jsPDF();
     
@@ -507,7 +486,7 @@ async function exportTrip(index) {
     doc.setTextColor(15, 23, 42); doc.setFontSize(11); doc.setFont("helvetica", "bold");
     doc.text("SCHIFFS- UND REISEINFORMATIONEN", 15, 58);
     doc.setFontSize(9); doc.setTextColor(100, 116, 139); doc.text("SCHIFFDATEN", 15, 65);
-    doc.setTextColor(15, 23, 42); doc.text([`Naam: ${s.name || '-'}`,`ENI: ${s.eni || '-'}`,`Tonnage: ${s.ton || '-'} t`,`Bevrachter: ${s.bevracht || '-'}`,`Tel: ${s.tel || '-'}`,`Mail: ${s.mail || '-'}`], 15, 72, { lineHeightFactor: 1.5 });
+    doc.setTextColor(15, 23, 42); doc.text([`Naam: ${s.name}`,`ENI: ${s.eni}`,`Tonnage: ${s.ton} t`,`Bevrachter: ${s.bevracht}`,`Tel: ${s.tel}`,`Mail: ${s.mail}`], 15, 72, { lineHeightFactor: 1.5 });
     doc.setTextColor(100, 116, 139); doc.text("REISEVERLAUF", 110, 65);
     doc.setTextColor(15, 23, 42); doc.text([`Route: ${r.van} > ${r.naar}`,`Personen: ${r.personen}`,`Ankunft: ${r.ad} ${r.at}`,`Abfahrt: ${r.vd} ${r.vt}`], 110, 72, { lineHeightFactor: 1.5 });
     doc.line(15, 99, 195, 99);
@@ -533,39 +512,42 @@ async function exportTrip(index) {
 
     document.getElementById('pdf-download-btn').onclick = () => doc.save(`Duisburg_${r.code}.pdf`);
 
-    document.getElementById('pdf-email-btn').onclick = () => {
-        const pdfBase64 = doc.output('datauristring').split(',')[1];
-        const eml = `To: anmeldung@duisport.de
-Subject: Hafendeklaration: ${s.name} - ${r.code}
-X-Unsent: 1
-Content-Type: multipart/mixed; boundary="sep"
+    document.getElementById('pdf-email-btn').onclick = async () => {
+        const btn = document.getElementById('pdf-email-btn');
+        const originalText = btn.innerHTML;
+        
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Bezig...';
+        btn.disabled = true;
 
---sep
-Content-Type: text/plain; charset=utf-8
+        try {
+            const pdfBase64 = doc.output('datauristring').split(',')[1];
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbyadUEf9POspYhVAaRkkoBUTaRu2TwbtNyLVBrja2Zz2m2WpLMdU_oKP_a3bnyOQQPztQ/exec'; 
 
-Sehr geehrte Damen und Herren,
+            await fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({
+                    pdfBase64: pdfBase64,
+                    fileName: `Duisburg_${r.code}.pdf`,
+                    shipName: s.name,
+                    tripCode: r.code
+                })
+            });
 
-anbei erhalten Sie die Hafendeklaration für das Schiff ${s.name}.
-
-Mit freundlichen Grüßen,
-Kapitän ${s.name}
-
---sep
-Content-Type: application/pdf; name="Duisburg_${r.code}.pdf"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="Duisburg_${r.code}.pdf"
-
-${pdfBase64}
---sep--`;
-
-        const blob = new Blob([eml], { type: 'message/rfc822' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `Mail_Duisburg_${r.code}.eml`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+            reizen[index].sent = true;
+            localStorage.setItem('du_reizen_v400', JSON.stringify(reizen));
+            renderReizen();
+            alert('Formulier succesvol verstuurd!');
+            closeModal('pdf-modal');
+        } catch (error) {
+            console.error(error);
+            alert('Er ging iets mis bij het verzenden.');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
     };
+
     openModal('pdf-modal');
 }
 
@@ -590,5 +572,3 @@ window.onload = () => { updateShipDisplay(); renderReizen(); };
 </script>
 </body>
 </html>
-
-
