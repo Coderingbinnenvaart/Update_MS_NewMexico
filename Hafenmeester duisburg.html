@@ -521,7 +521,7 @@ async function exportTrip(index) {
 
         try {
             const pdfBase64 = doc.output('datauristring').split(',')[1];
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbyxg8cjHhvIeOTcrxme1Pe-bAQYoFKoKdNgtBbBbLf2X_EDXqlhYMYlDIV4k63KYROTyA/exec'; 
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbyjdHtyjeUMIqwPMOQ7yL23etIDW8WLne2W1XbE_bqIVGNF5nomtsiNiuVBhtOoh2b69w/exec'; 
 
             await fetch(scriptURL, {
                 method: 'POST',
