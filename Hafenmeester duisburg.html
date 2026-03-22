@@ -5,7 +5,7 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hafenmeister Briefje</title>
+    <title>Hafenmeister Briefje 1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;900&display=swap" rel="stylesheet">
@@ -521,7 +521,7 @@ async function exportTrip(index) {
 
         try {
             const pdfBase64 = doc.output('datauristring').split(',')[1];
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbwzLgeHlhUv5yTMi5G2q_-icmXe_5r06umTphpxpeFNj_JJc4ZkFmsFz5L5TaHsvsJTSQ/exec'; 
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbwf4g_8Pfo1bO--XGacaSaly0ByZdk0Gytj1euABtxPoV41yMCA2RE0JjudGXH87zrh9Q/exec'; 
 
             await fetch(scriptURL, {
                 method: 'POST',
