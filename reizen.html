@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reizen </title>
+    <title>Reizen</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
@@ -18,8 +18,6 @@
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
         .stat-card { background: linear-gradient(180deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0) 100%); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 20px; text-align: center; }
         .sync-badge { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 4px 12px; border-radius: 99px; font-size: 10px; font-weight: 700; }
-        .loading-spinner { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
         #input-sectie {
             max-height: 0;
@@ -33,7 +31,6 @@
             margin-bottom: 2.5rem;
         }
 
-        /* Drag & Drop Styling */
         #drop-zone.drag-over {
             border-color: #10b981;
             background: rgba(16, 185, 129, 0.1);
@@ -93,10 +90,17 @@
             <div class="glass-card p-8 border-blue-500/20">
                 <h3 class="font-bold mb-6 text-white text-sm tracking-widest uppercase">Handmatige Invoer</h3>
                 <form onsubmit="verwerkInvoer(event)" class="space-y-4">
-                    <input type="text" id="reis-nr" class="input-dark" placeholder="Reisnummer">
+<div class="grid grid-cols-3 gap-4">
+    <div class="col-span-2">
+        <input type="text" id="reis-nr" class="input-dark" placeholder="Reisnummer" required>
+    </div>
+    <div>
+        <input type="number" id="reis-laag-handmatig" class="input-dark" placeholder="Lagen">
+    </div>
+</div>
                     <div class="grid grid-cols-2 gap-4">
-                        <input type="number" id="reis-kisten" class="input-dark" placeholder="Containers">
-                        <input type="number" step="0.01" id="reis-ton" class="input-dark" placeholder="Ton">
+                        <input type="number" id="reis-kisten" class="input-dark" placeholder="Containers" required>
+                        <input type="number" step="0.01" id="reis-ton" class="input-dark" placeholder="Ton" required>
                     </div>
                     <button type="submit" class="btn-primary w-full py-4 uppercase text-xs tracking-widest">Opslaan</button>
                 </form>
@@ -125,6 +129,7 @@
                         <th class="px-8 py-4">Datum</th>
                         <th class="px-8 py-4">Reisnummer</th>
                         <th class="px-8 py-4 text-right">Containers</th>
+                        <th class="px-8 py-4 text-right">Lagen</th>
                         <th class="px-8 py-4 text-right">Tonnage</th>
                     </tr>
                 </thead>
@@ -133,69 +138,201 @@
         </div>
     </main>
 
-    <script>
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwZ0RhD4ZbytP12l9s6TwIaws_JXJSNnnw5rEIkM-2S1Qufm1-Tl2wYkuDOQe8FOL3T4Q/exec';
-        let actueleData = [];
+<script>
+// --- CONFIGURATION ---
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxyQcd_3MFnDBXu09l-UTT1gfw2Se4LlF7fXvNivmPW5zN29Wd0nyv66krUhlBl6EKF9A/exec';
+let actueleData = [];
 
-        // --- DRAG AND DROP LOGICA ---
-        const dropZone = document.getElementById('drop-zone');
+// --- 1. LOAD DATA ON START ---
+async function laadDataVanCloud() {
+    const syncText = document.getElementById('sync-text');
+    const icon = document.getElementById('refresh-icon');
+    if(icon) icon.classList.add('fa-spin');
 
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, e => {
-                e.preventDefault();
-                e.stopPropagation();
-            }, false);
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL);
+        const data = await response.json();
+        
+        const jaar = document.getElementById('filter-jaar').value;
+        actueleData = data.filter(r => {
+            if (!r.datum) return false;
+            return new Date(r.datum).getFullYear().toString() === jaar || r.datum.includes(jaar);
         });
 
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over'), false);
-        });
+        actueleData.sort((a, b) => new Date(b.datum) - new Date(a.datum));
+        renderLijst(actueleData);
+        updateStats(actueleData);
+        
+        if(syncText) syncText.innerText = "Cloud Verbonden";
+    } catch (err) {
+        console.error("Fout bij laden:", err);
+        if(syncText) syncText.innerText = "Laden mislukt";
+    } finally {
+        if(icon) icon.classList.remove('fa-spin');
+    }
+}
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over'), false);
-        });
+// --- 2. BAPLIE ANALYZER (Merges with manual input) ---
+function analyseerBaplie(e) {
+    const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0];
+    if (!file) return;
 
-        dropZone.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            if (files.length > 0) {
-                analyseerBaplie({ target: { files: files } });
-            }
-        });
-        // --- EINDE DRAG AND DROP ---
+    const status = document.getElementById('baplie-status');
+    if(status) status.innerText = "Bezig met automatisch verwerken...";
+    
+    const reader = new FileReader();
+    // We maken de functie 'async' om direct te kunnen verzenden
+    reader.onload = async function(event) {
+        try {
+            const text = event.target.result;
+            const segments = text.split("'");
+            let gevondenNr = "", bKisten = 0, bTon = 0, maxL = 0;
 
-        function toggleInvoer() {
-            const sectie = document.getElementById('input-sectie');
-            sectie.classList.toggle('visible');
-            if(sectie.classList.contains('visible')) sectie.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function formatteerDatum(datumString) {
-            if(!datumString) return "-";
-            const d = new Date(datumString);
-            return d.toLocaleDateString('nl-NL', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
+            segments.forEach(seg => {
+                const line = seg.trim();
+                if (line.startsWith('TDT+20+')) gevondenNr = line.split('+')[2].split(':')[0];
+                if (line.startsWith('LOC+147')) {
+                    bKisten++;
+                    const pos = line.split('+')[2].split(':')[0];
+                    const l = parseInt(pos.slice(-2));
+                    if (l > maxL) maxL = l;
+                }
+                if (line.includes('KGM:')) {
+                    const w = parseFloat(line.split('KGM:')[1].split('+')[0]);
+                    if (!isNaN(w)) bTon += (w / 1000);
+                }
             });
-        }
 
-        async function laadDataVanCloud() {
-            const jaar = document.getElementById('filter-jaar').value;
-            const icon = document.getElementById('refresh-icon');
-            icon.classList.add('loading-spinner');
-            try {
-                const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'GET', redirect: 'follow' });
-                const data = await response.json();
-                actueleData = data.filter(r => r.datum && r.datum.includes(jaar));
-                actueleData.sort((a, b) => new Date(b.datum) - new Date(a.datum));
-                renderLijst(actueleData);
-                updateStats(actueleData);
-                document.getElementById('sync-text').innerText = "Cloud Verbonden";
-                document.getElementById('stats-jaar').innerText = jaar;
-            } catch (err) { console.error(err); } 
-            finally { icon.classList.remove('loading-spinner'); }
+            // 1. Haal de handmatige waarden op die er al stonden
+            const hKisten = parseInt(document.getElementById('reis-kisten').value) || 0;
+            const hTon = parseFloat(document.getElementById('reis-ton').value) || 0;
+            const hLaag = document.getElementById('reis-laag-handmatig').value;
+
+            // 2. Bereken de nieuwe totalen
+            const totaalKisten = hKisten + bKisten;
+            const totaalTonnage = (hTon + bTon).toFixed(1);
+            // Als er handmatig geen laag was ingevuld, pak die uit de BAPLIE
+            const finaleLaag = hLaag || Math.ceil(maxL / 2);
+
+            // 3. Update de vakjes op het scherm (visuele feedback)
+            document.getElementById('reis-nr').value = gevondenNr;
+            document.getElementById('reis-kisten').value = totaalKisten;
+            document.getElementById('reis-ton').value = totaalTonnage;
+            document.getElementById('reis-laag-handmatig').value = finaleLaag;
+
+            // --- 4. AUTOMATISCH VERSTUREN ---
+            // We sturen de gecombineerde data direct naar de cloud
+            await verzendData(gevondenNr, totaalKisten, totaalTonnage, finaleLaag);
+            
+            if(status) status.innerHTML = "<span style='color: #10b981;'>✓ Automatisch samengevoegd & opgeslagen!</span>";
+            
+            // Optioneel: Maak de form leeg na een paar seconden
+            setTimeout(() => {
+                document.getElementById('reis-nr').value = "";
+                document.getElementById('reis-kisten').value = "";
+                document.getElementById('reis-ton').value = "";
+                document.getElementById('reis-laag-handmatig').value = "";
+            }, 3000);
+
+        } catch (err) {
+            console.error(err);
+            if(status) status.innerText = "Fout bij automatisch verzenden.";
         }
+    };
+    reader.readAsText(file);
+}
+// --- 3. SAVE FUNCTION ---
+async function verwerkInvoer(e) {
+    e.preventDefault();
+    const nr = document.getElementById('reis-nr').value;
+    const kisten = document.getElementById('reis-kisten').value;
+    const ton = document.getElementById('reis-ton').value;
+    const laag = document.getElementById('reis-laag-handmatig').value || "-";
+    
+    await verzendData(nr, kisten, ton, laag);
+    
+    document.getElementById('reis-laag-handmatig').value = "";
+    e.target.reset();
+}
+
+// --- 4. SEND TO CLOUD ---
+async function verzendData(nr, containers, tonnage, laag) {
+    const syncText = document.getElementById('sync-text');
+    if(syncText) syncText.innerText = "Opslaan...";
+
+    const datum = new Date().toISOString();
+    const params = new URLSearchParams({ datum, nr, containers, tonnage, laag });
+    const url = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
+
+    try {
+        await fetch(url, { method: 'GET', mode: 'no-cors' });
+
+        const nieuweReis = { datum, nr, containers, tonnage, laag };
+        actueleData.unshift(nieuweReis);
+
+        renderLijst(actueleData);
+        updateStats(actueleData);
+
+        if(syncText) syncText.innerText = "Opgeslagen ✓";
+        setTimeout(laadDataVanCloud, 1500);
+
+        setTimeout(() => {
+            document.getElementById('baplie-status').innerHTML = "";
+        }, 3000);
+
+    } catch (err) {
+        console.error("Opslaan fout:", err);
+        if(syncText) syncText.innerText = "Fout bij opslaan";
+    }
+}
+
+// --- 5. UI DISPLAY ---
+function formatteerDatum(datumStr) {
+    if (!datumStr) return "-";
+    const d = new Date(datumStr);
+    return d.toLocaleDateString('nl-NL');
+}
+
+function renderLijst(reizen) {
+    const body = document.getElementById('reis-lijst-body');
+    if(!body) return;
+    
+    body.innerHTML = reizen.map(r => `
+        <tr class="hover:bg-white/[0.02] border-b border-white/5 transition-colors">
+            <td class="px-8 py-4 text-slate-500">${formatteerDatum(r.datum)}</td>
+            <td class="px-8 py-4 font-bold text-white">${r.nr}</td>
+            <td class="px-8 py-4 text-right font-bold text-blue-400">${r.containers}</td>
+            <td class="px-8 py-4 text-right font-bold text-slate-400">${r.laag || '-'}</td>
+            <td class="px-8 py-4 text-right font-bold text-emerald-500">${parseFloat(r.tonnage).toLocaleString('nl-NL')} T</td>
+        </tr>
+    `).join('');
+}
+
+function updateStats(reizen) {
+    document.getElementById('stat-reizen').innerText = reizen.length;
+    document.getElementById('stat-containers').innerText = reizen.reduce((s, r) => s + (parseInt(r.containers) || 0), 0);
+    document.getElementById('stat-tonnage').innerText = reizen.reduce((s, r) => s + (parseFloat(r.tonnage) || 0), 0).toFixed(1);
+    const sj = document.getElementById('stats-jaar');
+    if(sj) sj.innerText = document.getElementById('filter-jaar').value;
+}
+
+// --- 6. INITIALIZATION & EVENTS ---
+const dz = document.getElementById('drop-zone');
+if(dz) {
+    dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('border-blue-500'); });
+    dz.addEventListener('dragleave', () => { dz.classList.remove('border-blue-500'); });
+    dz.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dz.classList.remove('border-blue-500');
+        analyseerBaplie(e);
+    });
+}
+
+function toggleInvoer() {
+    document.getElementById('input-sectie').classList.toggle('visible');
+}
+
+window.onload = laadDataVanCloud;
 
 function maakPDF() {
     const { jsPDF } = window.jspdf;
@@ -258,7 +395,11 @@ doc.text(`Ms New Mexico - Wijgaart Shipping - ${new Date().toLocaleDateString('n
         r.containers, 
         parseFloat(r.tonnage).toLocaleString('nl-NL') + " T"
     ]);
-
+function formatteerDatum(datumStr) {
+    if (!datumStr) return "-";
+    const d = new Date(datumStr);
+    return d.toLocaleDateString('nl-NL');
+}
   
 
     doc.autoTable({
@@ -279,90 +420,9 @@ doc.text(`Ms New Mexico - Wijgaart Shipping - ${new Date().toLocaleDateString('n
 
     doc.save(`MS-New-Mexico-Reisverslag-${jaar}.pdf`);
 }
-        async function stuurNaarCloud(nr, kisten, ton) {
-            const params = new URLSearchParams({
-                datum: new Date().toISOString(),
-                nr: nr, containers: kisten, tonnage: ton
-            });
-            try {
-                await fetch(`${GOOGLE_SCRIPT_URL}?${params.toString()}`, { method: 'GET', mode: 'no-cors' });
-                setTimeout(() => {
-                    if(document.getElementById('input-sectie').classList.contains('visible')) toggleInvoer();
-                    laadDataVanCloud();
-                }, 2000);
-            } catch (error) { alert("Fout bij opslaan."); }
-        }
 
-        function verwerkInvoer(e) {
-            e.preventDefault();
-            stuurNaarCloud(document.getElementById('reis-nr').value, document.getElementById('reis-kisten').value, document.getElementById('reis-ton').value);
-            e.target.reset();
-        }
-
-        function analyseerBaplie(e) {
-            const file = e.target.files[0];
-            const status = document.getElementById('baplie-status');
-            const reader = new FileReader();
-            status.innerText = "Bezig met analyseren...";
-            
-            reader.onload = function(progressEvent) {
-                const segments = progressEvent.target.result.split("'");
-                let containers = 0; let totaalGewicht = 0; let gevondenReisNr = "";
-                segments.forEach(segment => {
-                    const line = segment.trim();
-                    if (line.startsWith('TDT+20')) {
-                        const onderdelen = line.split('+');
-                        for (let i = onderdelen.length - 1; i >= 0; i--) {
-                            const stukje = onderdelen[i].trim();
-                            if (stukje && !isNaN(stukje) && stukje.length > 3) { gevondenReisNr = stukje; break; }
-                        }
-                    }
-                    if (line.startsWith('LOC+147')) containers++;
-                    if (line.includes('KGM:')) {
-                        const waardeStuk = line.split('KGM:')[1];
-                        if (waardeStuk) {
-                            const gewichtSchoon = waardeStuk.split('+')[0].split(':')[0].trim();
-                            const gewicht = parseFloat(gewichtSchoon);
-                            if (!isNaN(gewicht)) totaalGewicht += (gewicht / 1000);
-                        }
-                    }
-                });
-                if (gevondenReisNr) {
-                    status.innerHTML = `Gevonden: ${gevondenReisNr} | ${containers} stuks | ${totaalGewicht.toFixed(1)} T`;
-                    status.className = "text-[10px] font-bold text-center text-emerald-500";
-                    stuurNaarCloud(gevondenReisNr, containers, totaalGewicht.toFixed(1));
-                } else {
-                    status.innerText = "Geen geldige data gevonden in bestand.";
-                    status.className = "text-[10px] font-bold text-center text-red-500";
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        function renderLijst(reizen) {
-            const body = document.getElementById('reis-lijst-body');
-            body.innerHTML = reizen.map(r => `
-                <tr class="hover:bg-white/[0.02] transition-colors">
-                    <td class="px-8 py-4 text-slate-500">${formatteerDatum(r.datum)}</td>
-                    <td class="px-8 py-4 font-bold text-white">${r.nr}</td>
-                    <td class="px-8 py-4 text-right font-bold text-blue-400">${r.containers}</td>
-                    <td class="px-8 py-4 text-right font-bold text-emerald-500">${parseFloat(r.tonnage).toLocaleString('nl-NL')} T</td>
-                </tr>
-            `).join('');
-        }
-
-        function updateStats(reizen) {
-            const k = reizen.reduce((s, r) => s + (parseInt(r.containers) || 0), 0);
-            const t = reizen.reduce((s, r) => s + (parseFloat(r.tonnage) || 0), 0);
-            document.getElementById('stat-reizen').innerText = reizen.length;
-            document.getElementById('stat-containers').innerText = k;
-            document.getElementById('stat-tonnage').innerText = t.toLocaleString('nl-NL', {minimumFractionDigits: 1});
-        }
-
-        window.onload = laadDataVanCloud;
-    </script>
+// Start de app
+laadDataVanCloud();
+</script>
 </body>
 </html>
-
-
-
