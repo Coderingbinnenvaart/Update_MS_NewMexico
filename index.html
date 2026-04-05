@@ -153,7 +153,7 @@
         .panel-label { color: #94a3b8; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 2.5px; display: block; margin-bottom: 4px; }
         .panel-val { color: #ffffff; font-weight: 800; font-size: 1.1rem; }
 
-        .search-box { margin-top: 130px; margin-bottom: 3rem; width: 100%; max-width: 550px; }
+        .search-box { margin-top: 80px; margin-bottom: 3rem; width: 100%; max-width: 550px; }
         .search-input { width: 100%; background: rgba(255, 255, 255, 0.95) !important; border-radius: 3rem !important; padding: 1.1rem; color: #020617; font-weight: 700; border: none; text-align: center; }
         
         .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; width: 100%; max-width: 800px; padding-bottom: 50px; }
@@ -192,7 +192,7 @@
 
 <nav class="navbar flex justify-between items-center px-10">
     <div class="flex items-center">
-        <img src="pic/logo2.png" alt="Logo" style="height: 90px; width: auto;" onerror="this.style.display='none'">
+        <img src="logo2.png" alt="Logo" style="height: 85px; width: auto;" onerror="this.style.opacity='0'">
     </div>
 
     <h1>MS NEW MEXICO</h1>
@@ -200,37 +200,44 @@
     <div class="flex items-center gap-6">
         <div class="relative">
             <button id="settings-btn" onclick="toggleSettingsMenu()" class="text-white hover:text-blue-400 transition-colors focus:outline-none flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
             </button>
             
-            <div id="settings-menu" class="hidden absolute right-0 top-[50px] w-64 bg-slate-950/90 backdrop-blur-2xl border border-blue-500/40 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] overflow-hidden z-[2000] ring-1 ring-white/10">
+            <div id="settings-menu" class="hidden absolute right-0 top-[60px] w-64 bg-slate-950/95 backdrop-blur-2xl border border-blue-500/40 rounded-3xl shadow-2xl overflow-hidden z-[2000] ring-1 ring-white/10">
                 <div class="px-5 py-4 bg-blue-500/10 border-b border-white/10">
                     <h4 class="text-[0.7rem] font-black text-blue-400 uppercase tracking-[3px] text-left">Systeembeheer</h4>
                 </div>
                 <div class="p-2 space-y-1">
-                    <a href="update://" onclick="setTimeout(() => { location.reload(); }, 6000);" class="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-blue-600/20 text-white transition-all duration-300 group">
-                        <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-blue-500/10 border border-blue-500/20 group-hover:scale-110 group-hover:bg-blue-500/30 transition-all">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
+                    <a href="update://" class="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-blue-600/20 text-white transition-all group">
+                        <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-blue-500/10 border border-blue-500/20 group-hover:bg-blue-500/30">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         </div>
                         <div class="flex flex-col text-left">
                             <span class="text-[0.75rem] font-black uppercase tracking-wide">Update</span>
                             <span id="version-text" class="text-[0.55rem] text-slate-400 font-bold">Versie synchroniseren</span>
                         </div>
                     </a>
-                    <button onclick="location.reload()" class="w-full flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-slate-800 text-white transition-all duration-300 group">
-                        <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 group-hover:bg-white/10 transition-all">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
+
+                    <button onclick="toggleHelpdesk()" class="w-full flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-emerald-600/20 text-white transition-all group">
+                        <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 group-hover:bg-emerald-500/30">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                        </div>
+                        <div class="flex flex-col text-left">
+                            <span class="text-[0.75rem] font-black uppercase tracking-wide">Helpdesk</span>
+                            <span class="text-[0.55rem] text-slate-400 font-bold">Meld een fout</span>
+                        </div>
+                    </button>
+
+                    <button onclick="location.reload()" class="w-full flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-slate-800 text-white transition-all group">
+                        <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                         </div>
                         <div class="flex flex-col text-left">
                             <span class="text-[0.75rem] font-black uppercase tracking-wide">Herstarten</span>
-                            <span class="text-[0.55rem] text-slate-400 font-bold">Dashboard verversen</span>
+                            <span class="text-[0.55rem] text-slate-400 font-bold">Verversen</span>
                         </div>
                     </button>
                 </div>
@@ -243,6 +250,29 @@
         </div>
     </div>
 </nav>
+
+<div id="helpdesk-modal" class="fixed inset-0 z-[4000] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-emerald-500/30 rounded-[2.5rem] p-8 w-full max-w-md shadow-2xl">
+        <h3 class="text-xl font-black text-white uppercase italic mb-2">Helpdesk Support</h3>
+        <p class="text-xs text-slate-400 mb-6">Meld een probleem of stel een vraag aan de beheerder.</p>
+        
+        <form id="helpdesk-form" class="space-y-4">
+            <div>
+                <label class="block text-[0.6rem] font-bold text-emerald-400 uppercase tracking-widest mb-2">onderwerp</label>
+                <input type="text" name="user" required class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-emerald-500 transition-all">
+            </div>
+            <div>
+                <label class="block text-[0.6rem] font-bold text-emerald-400 uppercase tracking-widest mb-2">Omschrijving probleem</label>
+                <textarea name="message" required rows="4" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-emerald-500 transition-all resize-none"></textarea>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="toggleHelpdesk()" class="flex-1 px-6 py-3 rounded-xl border border-white/10 text-white font-bold text-xs uppercase hover:bg-white/5 transition-all">Annuleren</button>
+                <button type="submit" id="submit-btn" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase py-3 rounded-xl shadow-lg transition-all">Verstuur</button>
+            </div>
+        </form>
+        <div id="form-status" class="hidden mt-4 text-center text-xs font-bold uppercase tracking-widest text-emerald-400">Verzenden...</div>
+    </div>
+</div>
     <h1>MS NEW MEXICO</h1>
 
     <div class="ml-auto text-right">
@@ -669,14 +699,28 @@
                     <p class="text-white font-black text-2xl mt-1 tracking-tighter group-hover:scale-105 transition-transform origin-left">+31 88 669 95 55</p>
                 </div>
 
-                <div class="space-y-3">
-                    <button class="w-full bg-blue-600 hover:bg-blue-500 text-white text-[0.75rem] font-black uppercase py-4 rounded-xl transition-all shadow-lg shadow-blue-600/20 tracking-[2px] flex items-center justify-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Schadeformulier (PDF)
-                    </button>
-                </div>
+               <div class="bg-black/20 border border-white/10 rounded-xl p-5">
+    <h3 class="text-white text-xs font-bold uppercase tracking-widest mb-4 opacity-50">Documentatie</h3>
+    
+    <div class="flex items-center justify-between bg-white/5 p-4 rounded-lg border border-white/5">
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-blue-500/20 rounded flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <div>
+                <p class="text-white text-sm font-bold">Schadeformulier_Template.docx</p>
+                <p class="text-slate-500 text-[0.7rem]">Klik om het invulbestand te downloaden</p>
+            </div>
+        </div>
+
+        <a href="templates/schade-v1.docx" download="Schadeformulier_MS_New_Mexico.docx" 
+           class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-lg">
+            DOWNLOAD
+        </a>
+    </div>
+</div>
             </div>
         </div>
 
@@ -688,7 +732,7 @@
 
   <script>
 // STEL JE HUIDIGE VERSIE HIER IN
-        const currentVersion = "1.3.2"; 
+        const currentVersion = "1.3.3"; 
 const githubUrl = "https://raw.githubusercontent.com/Coderingbinnenvaart/Update_MS_NewMexico/refs/heads/main/index.html";
 
 async function checkForUpdates() {
@@ -897,6 +941,47 @@ function toggleWifiQR() {
     const overlay = document.getElementById('wifi-overlay');
     overlay.classList.toggle('hidden');
 }
+
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcC43FIhwTXl2yhL9fX6rrmNitOWhj06mgHSuTGQrVnBeRa9111WOwLfCQVSscihm0Dg/exec";
+
+function toggleHelpdesk() {
+    const modal = document.getElementById('helpdesk-modal');
+    modal.classList.toggle('hidden');
+    document.getElementById('settings-menu').classList.add('hidden');
+}
+
+document.getElementById('helpdesk-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    const status = document.getElementById('form-status');
+    const formData = new FormData(this);
+
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    status.classList.remove('hidden');
+    status.textContent = "Bericht wordt verzonden...";
+
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors', // Belangrijk voor Google Scripts
+            body: formData
+        });
+
+        status.textContent = "Bedankt! Bericht is verzonden.";
+        setTimeout(() => {
+            toggleHelpdesk();
+            this.reset();
+            status.classList.add('hidden');
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        }, 3000);
+    } catch (error) {
+        status.textContent = "Fout bij verzenden. Probeer later opnieuw.";
+        btn.disabled = false;
+        btn.style.opacity = '1';
+    }
+});
     </script>
 </body>
 </html>
