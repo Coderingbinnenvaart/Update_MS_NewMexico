@@ -699,27 +699,27 @@
                     <p class="text-white font-black text-2xl mt-1 tracking-tighter group-hover:scale-105 transition-transform origin-left">+31 88 669 95 55</p>
                 </div>
 
-               <div class="bg-black/20 border border-white/10 rounded-xl p-5">
-    <h3 class="text-white text-xs font-bold uppercase tracking-widest mb-4 opacity-50">Documentatie</h3>
-    
-    <div class="flex items-center justify-between bg-white/5 p-4 rounded-lg border border-white/5">
-        <div class="flex items-center gap-4">
-            <div class="w-10 h-10 bg-blue-500/20 rounded flex items-center justify-center">
+               <div class="group relative bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-2xl p-1 transition-all hover:border-blue-500/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]">
+    <a href="schadeformulier-template.docx" download="Schadeformulier_MS_New_Mexico.docx" class="flex items-center justify-between p-4 bg-black/40 rounded-xl overflow-hidden relative">
+        
+        <div class="absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/5 transition-colors"></div>
+
+        <div class="flex items-center gap-4 relative z-10">
+            <div class="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
             </div>
             <div>
-                <p class="text-white text-sm font-bold">Schadeformulier_Template.docx</p>
-                <p class="text-slate-500 text-[0.7rem]">Klik om het invulbestand te downloaden</p>
+                <h4 class="text-white text-[0.8rem] font-black uppercase tracking-[1px]">Schade formulier</h4>
+
             </div>
         </div>
 
-        <a href="templates/schade-v1.docx" download="Schadeformulier_MS_New_Mexico.docx" 
-           class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-lg">
+        <div class="bg-blue-600 text-white text-[0.6rem] font-black px-3 py-1.5 rounded-md tracking-tighter group-hover:scale-110 transition-transform relative z-10">
             DOWNLOAD
-        </a>
-    </div>
+        </div>
+    </a>
 </div>
             </div>
         </div>
@@ -732,7 +732,7 @@
 
   <script>
 // STEL JE HUIDIGE VERSIE HIER IN
-        const currentVersion = "1.3.3"; 
+        const currentVersion = "1.3.4"; 
 const githubUrl = "https://raw.githubusercontent.com/Coderingbinnenvaart/Update_MS_NewMexico/refs/heads/main/index.html";
 
 async function checkForUpdates() {
