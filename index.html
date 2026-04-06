@@ -199,12 +199,13 @@
 
     <div class="flex items-center gap-6">
         <div class="relative">
-            <button id="settings-btn" onclick="toggleSettingsMenu()" class="text-white hover:text-blue-400 transition-colors focus:outline-none flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-            </button>
+    <button id="settings-btn" onclick="toggleSettingsMenu()" class="text-white hover:text-blue-400 transition-colors focus:outline-none flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+    </button>
+    
             
             <div id="settings-menu" class="hidden absolute right-0 top-[60px] w-64 bg-slate-950/95 backdrop-blur-2xl border border-blue-500/40 rounded-3xl shadow-2xl overflow-hidden z-[2000] ring-1 ring-white/10">
                 <div class="px-5 py-4 bg-blue-500/10 border-b border-white/10">
@@ -460,11 +461,11 @@
                 <div class="space-y-2">
                     <div class="group flex justify-between items-center bg-gradient-to-r from-blue-600/20 to-blue-900/10 p-4 rounded-2xl border border-blue-500/30 hover:border-blue-400/60 transition-all shadow-lg">
                         <div class="flex flex-col">
-                            <span class="text-blue-400 font-black uppercase text-[0.55rem] tracking-widest mb-1">Main Propulsion</span>
+                            <span class="text-blue-400 font-black uppercase text-[0.55rem] tracking-widest mb-1">Hoofdmotor</span>
                             <span class="font-bold text-white text-xs">2x MTU 12V4000 M60</span>
                         </div>
                         <div class="text-right">
-                            <span class="text-blue-300 font-mono text-xs block">3590 PK</span>
+                            <span class="text-blue-300 font-mono text-xs block">2860 PK</span>
                             <span class="text-blue-500/50 text-[0.5rem] uppercase font-bold">Operational</span>
                         </div>
                     </div>
@@ -473,16 +474,16 @@
                         <div class="bg-white/[0.03] p-3 rounded-xl border border-white/10 flex justify-between items-center">
                             <div>
                                 <p class="text-slate-500 text-[0.55rem] uppercase font-bold">Kopschroef</p>
-                                <p class="text-white font-bold text-[0.7rem]">Veth-Jet</p>
+                                <p class="text-white font-bold text-[0.7rem]">2x Veth-Jet 3k-1300</p>
                             </div>
-                            <span class="text-[0.65rem] font-mono text-slate-400">1270 PK</span>
+                            <span class="text-[0.65rem] font-mono text-slate-400">1070 PK</span>
                         </div>
                         <div class="bg-white/[0.03] p-3 rounded-xl border border-white/10 flex justify-between items-center">
                             <div>
                                 <p class="text-slate-500 text-[0.55rem] uppercase font-bold">Generatoren</p>
-                                <p class="text-white font-bold text-[0.7rem]">John Deere</p>
+                                <p class="text-white font-bold text-[0.7rem]">John Deere voor / achter</p>
                             </div>
-                            <span class="text-[0.65rem] font-mono text-slate-400">270 kVA</span>
+                            <span class="text-[0.65rem] font-mono text-slate-400">67KVA / 120 KVA</span>
                         </div>
                     </div>
                 </div>
@@ -732,7 +733,7 @@
 
   <script>
 // STEL JE HUIDIGE VERSIE HIER IN
-        const currentVersion = "1.3.4"; 
+        const currentVersion = "1.3.5"; 
 const githubUrl = "https://raw.githubusercontent.com/Coderingbinnenvaart/Update_MS_NewMexico/refs/heads/main/index.html";
 
 async function checkForUpdates() {
